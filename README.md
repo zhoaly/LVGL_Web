@@ -1,27 +1,9 @@
 # LVGL Web
 
-一个可直接上传到 ESP Remote Build 服务的 LVGL 9.3 WebAssembly 工程。工程使用 SDL2 作为 LVGL 显示/输入驱动，由 Emscripten 输出 `index.html`、JavaScript 和 WebAssembly 预览文件。
+基于 LVGL 9.3、SDL2 与 Emscripten 的 WebAssembly 预览工程。`src/lvgl_app/`
+保持平台无关，可作为 ESP-IDF UI 组件迁移。
 
-UI 代码已封装为独立组件 `src/lvgl_app/`，与平台层完全解耦，可一键移植到 ESP32 工程。
-
-## 远端网页构建
-
-1. 启动参考工程中的 Local Agent。
-2. 打开 `http://100.87.225.67:8000/tools/lvgl/build`。
-3. 选择 `Local upload build` 和 `Full web project`。
-4. Project Path 填写本工程绝对路径：
-
-   ```text
-   C:\Users\13281\OneDrive\dev_projects\LVGL_Web
-   ```
-
-5. Project Name 填写 `LVGL_Web`，设置预览宽高，然后启动远端构建。
-
-服务会忽略压缩包的外层目录并自动定位根目录的 `CMakeLists.txt`。构建成功后可在 LVGL Preview 页面运行或下载预览包。
-
-## PowerShell 直接上传
-
-不经过 Local Agent，也可以在工程根目录运行：
+## 远程构建
 
 ```powershell
 .\scripts\remote_build.ps1
@@ -33,58 +15,51 @@ UI 代码已封装为独立组件 `src/lvgl_app/`，与平台层完全解耦，�
 .\scripts\remote_build.ps1 -Width 320 -Height 480
 ```
 
-脚本会排除 `build`、`build_web` 和 `.git`，上传到 `/api/lvgl/build/upload`，等待任务结束，并输出预览、产物和日志地址。
-
-## 工程结构
+## UI 结构
 
 ```text
-CMakeLists.txt                      Emscripten/LVGL 构建入口（Web 目标）
-lv_conf.h                           LVGL 9.3 配置（Web 与 ESP32 共用）
-src/
-├── main.c                          SDL 驱动和浏览器主循环（平台相关）
-├── ui.h / ui.c                     旧 UI 兼容层，已重定向至 lvgl_app
-└── lvgl_app/                       ★ 可移植 UI 组件 — 可直接拷贝到 ESP32
-    ├── lvgl_app.h                   UI 入口声明
-    ├── lvgl_app.c                   极简演示 UI（仅显示字符 + 计时器）
-    ├── CMakeLists.txt               ESP-IDF 组件 CMake（供 ESP32 使用）
-    └── idf_component.yml            ESP-IDF 组件清单（自动拉取 lvgl）
-scripts/
-└── remote_build.ps1                打包、上传、轮询脚本
+src/lvgl_app/
+├── include/App_Ui.h              对外状态事件与生命周期 API
+├── App_Ui.c                      事件/命令队列、Action 回调和刷新调度
+├── App_UiNav.c                   页面栈
+├── App_UiModel.c                 UI 状态快照与 dirty 标记
+├── App_UiView.c                  屏幕宿主、标题、内容区和 Toast
+├── action/                       ESP app_action 的 Web UI-only 版本
+├── components/                   导航栏、状态卡片、信息行等复用组件
+├── pages/                        所有页面及页面注册表
+├── port/                         PC/ESP32 平台适配
+└── CMakeLists.txt                ESP-IDF 组件构建入口
 ```
 
-## 移植到 ESP32
+页面不再使用 View 模板。新增页面时实现一个独立页面描述符（`build`、`refresh`、
+标题和 dirty mask），然后加入 `App_UiPages_Get()` 使用的注册表。
 
-将 `src/lvgl_app/` 整个目录拷贝到 ESP32 工程的 `components/` 下：
+## Action 约束
+
+所有可交互 LVGL 控件必须绑定 `app_action_request_t`。页面和组件不得直接调用
+`App_UiNav_*`：
 
 ```text
-ESP32_S3_wifi_ble_hub/
-└── components/
-    └── lvgl_app/              ← 从本工程拷贝
-        ├── lvgl_app.h
-        ├── lvgl_app.c
-        ├── CMakeLists.txt
-        └── idf_component.yml
+LVGL 点击
+  -> app_action_submit()
+  -> Action dispatcher
+  -> UI 命令队列
+  -> App_UiNav
+  -> 页面切换
 ```
 
-然后在 ESP32 工程中：
+Web 构建使用 `APP_ACTION_UI_ONLY`，仅执行 UI 导航 Action；其他 ESP 硬件命令返回
+`ESP_ERR_NOT_SUPPORTED`。ESP-IDF 版本由完整 `app_action/task_action` worker 执行相同
+UI Action，并通过注册回调把命令安全地投递回 UI 队列。
 
-1. **添加 LVGL 依赖** — 在 `main/idf_component.yml` 中新增：
-   ```yaml
-   dependencies:
-     lvgl/lvgl: "^9.3"
-   ```
+## 迁移到 ESP-IDF
 
-2. **注册组件** — 在 `main/CMakeLists.txt` 的 `REQUIRES` 中添加 `lvgl_app`。
+将 `src/lvgl_app/` 复制为 ESP-IDF 组件，并确保工程同时提供完整的 `app_action`
+组件。`lvgl_app` 依赖 `lvgl` 和 `app_action`，显示、输入以及墨水屏刷新策略由
+`port/App_UiPort_Esp32.c` 接入。初始化 LVGL 后调用：
 
-3. **调用入口** — 在 `main.c` 中初始化 LVGL 和显示驱动后调用：
-   ```c
-   #include "lvgl_app/lvgl_app.h"
-   lvgl_app_init();
-   ```
+```c
+#include "lvgl_app.h"
 
-4. **运行 `idf.py reconfigure`** 自动拉取 LVGL 库。
-
----
-
-构建服务若挂载了 `/lvgl_source`，CMake 会优先使用该缓存源码；否则固定从官方仓库获取 `v9.3.0`，以保证版本可复现。
-
+lvgl_app_init();
+```
