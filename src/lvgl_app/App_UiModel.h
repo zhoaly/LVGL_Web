@@ -99,16 +99,20 @@ void App_UiModel_ApplyEvent(app_ui_model_t *model, const app_ui_event_t *event);
  * @param model Model 指针
  * @param page_id 当前页面 ID
  */
+ * @param page_id 当前页面 ID
+ */
 void App_UiModel_SetCurrentPage(app_ui_model_t *model, app_ui_page_id_t page_id);
 
 /**
  * @brief 将指定 Key 对应的值格式化为字符串。
  *
- * 对于简单值（如枚举/布尔）直接返回静态字符串指针；
- * 对于数值（如堆内存/时间）使用 snprintf 写入 buf 后返回。
+ * 【返回值策略】
+ *   - 对于简单值（枚举/布尔）：直接返回静态字符串指针（如 "ON"、"OFF"、"ESP"）
+ *   - 对于数值（如堆内存、时间）：使用 snprintf 写入 buf 后返回 buf 指针
+ *
  * @param model Model 指针
  * @param key 数据值 Key
- * @param buf 输出缓冲区
+ * @param buf 输出缓冲区（用于数值格式化）
  * @param buf_size 缓冲区大小
  * @return 格式化后的字符串指针（可能指向静态内存或 buf）
  */
