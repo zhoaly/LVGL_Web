@@ -1,22 +1,42 @@
+/**
+ * @file App_UiPageHome.c
+ * @brief 首页（Home Page）实现 —— 显示 "Ready" 欢迎界面。
+ *
+ * 【布局】
+ * 使用 flex column 居中对齐，在屏幕中央显示 "Ready" 标签。
+ * 首页没有返回按钮，不可导航返回。
+ */
+
 #include "App_UiPageHome.h"
 
 #include "lvgl/lvgl.h"
 
+/**
+ * @brief 首页构建回调：创建一个居中的 "Ready" 标签
+ * @param parent 父容器
+ * @param model 数据模型（未使用）
+ */
 static void build(lv_obj_t *parent, const app_ui_model_t *model)
 {
     lv_obj_t *ready_label;
     (void)model;
 
+    /* 设置 flex 列居中布局 */
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_CENTER,
                           LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
+    /* 创建 "Ready" 标签 */
     ready_label = lv_label_create(parent);
     lv_label_set_text(ready_label, "Ready");
     lv_obj_set_style_text_font(ready_label, &lv_font_montserrat_16, 0);
     lv_obj_set_style_text_color(ready_label, lv_color_hex(0x4A5568), 0);
 }
 
+/**
+ * @brief 首页刷新回调（当前为空操作）
+ * @param model 数据模型（未使用）
+ */
 static void refresh(const app_ui_model_t *model)
 {
     (void)model;
@@ -24,6 +44,7 @@ static void refresh(const app_ui_model_t *model)
 
 const app_ui_page_t *App_UiPageHome_Get(void)
 {
+    /* 静态常量页面描述符 */
     static const app_ui_page_t page = {
         .id = APP_UI_PAGE_HOME,
         .title = "LVGL App",
