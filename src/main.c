@@ -3,7 +3,7 @@
 #include <emscripten.h>
 #include <stddef.h>
 
-#include "lvgl_app/lvgl_app.h"
+#include "lvgl_app/app/App_Ui.h"
 
 static void lvgl_loop(void *user_data)
 {
@@ -30,10 +30,11 @@ int main(void)
     lv_indev_t *keyboard = lv_sdl_keyboard_create();
     lv_indev_set_display(keyboard, display);
 
-    lvgl_app_init();
+    if(!App_UiInit() || !App_UiStart()) {
+        return 1;
+    }
 
     /* Let the browser own the event loop; LVGL is serviced once per frame. */
     emscripten_set_main_loop_arg(lvgl_loop, NULL, 0, 1);
     return 0;
 }
-

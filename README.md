@@ -1,65 +1,84 @@
 # LVGL Web
 
-基于 LVGL 9.3、SDL2 与 Emscripten 的 WebAssembly 预览工程。`src/lvgl_app/`
-保持平台无关，可作为 ESP-IDF UI 组件迁移。
+基于 LVGL 9.3、SDL2 和 Emscripten 的 WebAssembly UI 工程。`src/lvgl_app/`
+保持平台无关，可作为一个独立 ESP-IDF 组件迁移到 ESP32 工程。
 
-## 远程构建
+当前工程只包含一个初始页面：标题为 `LVGL App`，内容为 `Ready`。USB、Wi-Fi、
+Runtime 等演示业务已经移除，保留的代码均用于后续扩展框架。
 
-```powershell
-.\scripts\remote_build.ps1
-```
-
-自定义画布：
+## Web 远程构建
 
 ```powershell
-.\scripts\remote_build.ps1 -Width 320 -Height 480
+.\scripts\remote_build.ps1 -Width 240 -Height 320
 ```
 
-## UI 结构
+## 目录结构
 
 ```text
 src/lvgl_app/
-├── include/App_Ui.h              对外状态事件与生命周期 API
-├── App_Ui.c                      事件/命令队列、Action 回调和刷新调度
-├── App_UiNav.c                   页面栈
-├── App_UiModel.c                 UI 状态快照与 dirty 标记
-├── App_UiView.c                  屏幕宿主、标题、内容区和 Toast
-├── action/                       ESP app_action 的 Web UI-only 版本
-├── components/                   导航栏、状态卡片、信息行等复用组件
-├── pages/                        所有页面及页面注册表
-├── port/                         PC/ESP32 平台适配
-└── CMakeLists.txt                ESP-IDF 组件构建入口
+├── app/                 UI 生命周期、事件队列和总调度
+├── action/              通用 UI Action、Dispatcher 和任务快照
+├── model/               UI 状态与 dirty 标志
+├── navigation/          页面栈和导航操作
+├── view/                屏幕容器、页面渲染和 Toast
+├── components/          可复用控件和 Action 绑定
+├── pages/
+│   ├── registry/        页面描述符和页面注册表
+│   └── home/            唯一的初始页面
+├── port/
+│   ├── pc/              Web/SDL 平台适配
+│   └── esp32/           ESP32 平台适配骨架
+├── CMakeLists.txt       ESP-IDF 组件构建入口
+└── idf_component.yml    ESP-IDF 组件依赖
 ```
 
-页面不再使用 View 模板。新增页面时实现一个独立页面描述符（`build`、`refresh`、
-标题和 dirty mask），然后加入 `App_UiPages_Get()` 使用的注册表。
+## 新增页面
 
-## Action 约束
+1. 在 `app/App_Ui.h` 的 `app_ui_page_id_t` 中添加页面 ID。
+2. 在 `pages/` 下为页面创建独立文件夹，实现自己的 `build`、`refresh` 和
+   `App_UiPageXxx_Get()`。
+3. 在 `pages/registry/App_UiPages.c` 中注册页面描述符。
+4. 需要跳转时，为控件绑定 `APP_ACTION_ID_UI_NAV_PUSH`，并传入目标页面 ID。
 
-所有可交互 LVGL 控件必须绑定 `app_action_request_t`。页面和组件不得直接调用
-`App_UiNav_*`：
+首页不会显示导航栏。新增的非首页页面会自动使用通用 Home 导航，并在页面描述符
+允许且导航栈可返回时显示 Back 按钮。
 
-```text
-LVGL 点击
-  -> app_action_submit()
-  -> Action dispatcher
-  -> UI 命令队列
-  -> App_UiNav
-  -> 页面切换
+## 新增状态或事件
+
+1. 在 `app/App_Ui.h` 中添加事件类型和对应 dirty 标志。
+2. 在 `model/App_UiModel.h` 中添加最小必要状态。
+3. 在 `model/App_UiModel.c` 的 `App_UiModel_ApplyEvent()` 中更新状态和 dirty 标志。
+4. 让相关页面的 `dirty_mask` 包含该标志，并在 `refresh` 中更新控件。
+
+外部任务通过 `App_UiPostEvent()` 投递事件，不应直接操作 LVGL 控件。
+
+## 新增通用组件
+
+每类独立组件放入 `components/` 下自己的源文件和头文件。交互控件统一通过
+`App_UiComponent_BindAction()` 提交 Action，避免页面直接调用导航模块。
+
+## 单元测试
+
+```powershell
+cmake -S tests -B build_tests
+cmake --build build_tests
+ctest --test-dir build_tests --output-on-failure
 ```
 
-Web 构建使用 `APP_ACTION_UI_ONLY`，仅执行 UI 导航 Action；其他 ESP 硬件命令返回
-`ESP_ERR_NOT_SUPPORTED`。ESP-IDF 版本由完整 `app_action/task_action` worker 执行相同
-UI Action，并通过注册回调把命令安全地投递回 UI 队列。
+测试覆盖通用 Action、Model 消息事件和导航栈，不依赖 LVGL 或 ESP-IDF。
 
 ## 迁移到 ESP-IDF
 
-将 `src/lvgl_app/` 复制为 ESP-IDF 组件，并确保工程同时提供完整的 `app_action`
-组件。`lvgl_app` 依赖 `lvgl` 和 `app_action`，显示、输入以及墨水屏刷新策略由
-`port/App_UiPort_Esp32.c` 接入。初始化 LVGL 后调用：
+将 `src/lvgl_app/` 复制到 ESP-IDF 工程的 `components/lvgl_app/`。初始化 LVGL 显示
+和输入设备后调用：
 
 ```c
-#include "lvgl_app.h"
+#include "App_Ui.h"
 
-lvgl_app_init();
+if (App_UiInit()) {
+    App_UiStart();
+}
 ```
+
+在真实硬件上，需要在 `port/esp32/App_UiPort_Esp32.c` 中接入显示、输入和屏幕刷新
+策略。Action 已包含在该组件内，不再依赖外部 `app_action` 组件。

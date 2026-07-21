@@ -1,21 +1,20 @@
 idf_component_register(
     SRCS
-        "App_Ui.c"
-        "App_UiNav.c"
-        "App_UiModel.c"
-        "App_UiView.c"
+        "app/App_Ui.c"
+        "action/app_action.c"
+        "action/task_action.c"
+        "model/App_UiModel.c"
+        "navigation/App_UiNav.c"
+        "view/App_UiView.c"
         "components/App_UiComponents.c"
-        "pages/App_UiPages.c"
-        "pages/App_UiPageHome.c"
-        "pages/App_UiPageUsbStatus.c"
-        "pages/App_UiPageRuntime.c"
-        "port/App_UiPort_Esp32.c"
-        "lvgl_app.c"
+        "pages/registry/App_UiPages.c"
+        "pages/home/App_UiPageHome.c"
+        "port/esp32/App_UiPort_Esp32.c"
     INCLUDE_DIRS
-        "."
-        "include"
-    PRIV_REQUIRES
-        app_action
+        "app"
+        "action"
     REQUIRES
         lvgl
+    PRIV_REQUIRES
+        freertos
 )

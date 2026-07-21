@@ -1,8 +1,8 @@
 param(
     [string]$Server = "http://100.87.225.67:8000",
     [string]$ProjectName = "LVGL_Web",
-    [ValidateRange(120, 4096)][int]$Width = 480,
-    [ValidateRange(120, 4096)][int]$Height = 480,
+    [ValidateRange(120, 4096)][int]$Width = 240,
+    [ValidateRange(120, 4096)][int]$Height = 320,
     [switch]$NoWait
 )
 
@@ -40,6 +40,7 @@ try {
     tar.exe -a -cf $zipPath `
         --exclude='./build' `
         --exclude='./build_web' `
+        --exclude='./build_tests*' `
         --exclude='./.git' `
         .
 }

@@ -21,6 +21,7 @@ int main(void)
     int call_count = 0;
 
     assert(app_action_init() == ESP_OK);
+    assert(app_action_get_latest(&snapshot) == ESP_ERR_INVALID_ARG);
 
     memset(&request, 0, sizeof(request));
     request.id = APP_ACTION_ID_UI_NAV_HOME;
@@ -40,8 +41,8 @@ int main(void)
     assert(app_action_submit(&request, &job_id) == ESP_ERR_INVALID_ARG);
     assert(call_count == 1);
 
-    request.id = APP_ACTION_ID_WIFI_INIT;
-    assert(app_action_submit(&request, &job_id) == ESP_ERR_NOT_SUPPORTED);
+    request.id = APP_ACTION_ID_INVALID;
+    assert(app_action_submit(&request, &job_id) == ESP_ERR_INVALID_ARG);
 
     s_dispatch_result = ESP_ERR_TIMEOUT;
     request.id = APP_ACTION_ID_UI_NAV_BACK;
@@ -49,5 +50,6 @@ int main(void)
     assert(app_action_get_job(job_id, &snapshot) == ESP_OK);
     assert(snapshot.state == APP_ACTION_JOB_STATE_FAILED);
     assert(snapshot.result == ESP_ERR_TIMEOUT);
+    assert(strcmp(app_action_id_to_name(APP_ACTION_ID_UI_NAV_HOME), "ui_nav_home") == 0);
     return 0;
 }

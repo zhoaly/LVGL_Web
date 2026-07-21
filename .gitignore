@@ -1,8 +1,8 @@
 /build/
 /build_web/
+/build_tests*/
 /.cache/
 /.vscode/
 *.zip
 *.wasm
 *.data
-

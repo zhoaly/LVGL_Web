@@ -1,7 +1,4 @@
-# ESP-IDF 组件清单 — 用于在 ESP32 工程中声明 LVGL 依赖
-# 将 lvgl_app/ 拷贝到 ESP32 工程的 components/ 下后，
-# 此文件告诉 IDF 包管理器自动拉取 LVGL 库。
 version: "1.0.0"
-description: "Portable LVGL demo app — shared between Web(SDL) and ESP32 targets"
+description: "Portable modular LVGL application framework for Web and ESP32"
 dependencies:
   lvgl/lvgl: "^9.3"
