@@ -43,6 +43,7 @@ target_include_directories(test_ui_pages PRIVATE
     ../src/lvgl_app/app
     ../src/lvgl_app/model
     ../src/lvgl_app/pages/home
+    ../src/lvgl_app/pages/text
     ../src/lvgl_app/pages/registry
 )
 add_test(NAME ui_pages COMMAND test_ui_pages)

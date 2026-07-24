@@ -53,6 +53,7 @@ add_executable(index
     src/lvgl_app/components/App_UiComponents.c
     src/lvgl_app/pages/registry/App_UiPages.c
     src/lvgl_app/pages/home/App_UiPageHome.c
+    src/lvgl_app/pages/text/App_UiPageText.c
 )
 
 if(EMSCRIPTEN)

@@ -9,6 +9,7 @@ idf_component_register(
         "components/App_UiComponents.c"
         "pages/registry/App_UiPages.c"
         "pages/home/App_UiPageHome.c"
+        "pages/text/App_UiPageText.c"
         "port/esp32/App_UiPort_Esp32.c"
     INCLUDE_DIRS
         "app"

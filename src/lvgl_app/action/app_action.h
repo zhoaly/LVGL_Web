@@ -76,6 +76,8 @@ typedef struct {
         struct {
             uint32_t page_id;        /**< 导航目标页面 ID */
         } ui_navigation;             /**< UI 导航参数 */
+
+        //当前只有导航动作
         uint8_t reserved[16];        /**< 预留参数空间 */
     } params;
 } app_action_request_t;

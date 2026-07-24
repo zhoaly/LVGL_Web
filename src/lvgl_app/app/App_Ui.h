@@ -29,6 +29,7 @@ extern "C" {
 typedef enum {
     APP_UI_PAGE_NONE = 0,  /**< 无效页面，用于初始化和错误状态 */
     APP_UI_PAGE_HOME,      /**< 首页 */
+    APP_UI_PAGE_TEXT,      /**< 纯文字页面 */
 } app_ui_page_id_t;
 
 /**

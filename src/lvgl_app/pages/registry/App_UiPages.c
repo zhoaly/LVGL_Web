@@ -13,12 +13,14 @@
 #include <stddef.h>
 
 #include "../home/App_UiPageHome.h"
+#include "../text/App_UiPageText.h"
 
 const app_ui_page_t *App_UiPages_Get(app_ui_page_id_t page_id)
 {
     /* 所有已注册页面的描述符数组 */
     const app_ui_page_t *pages[] = {
         App_UiPageHome_Get(),  /* 首页（APP_UI_PAGE_HOME） */
+        App_UiPageText_Get(),  /* 纯文字页面（APP_UI_PAGE_TEXT） */
     };
     uint32_t i;
 
