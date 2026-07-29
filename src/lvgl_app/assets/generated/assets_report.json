@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "total_bytes": 648,
+  "icons": [
+    {
+      "id": "nav_back",
+      "source": "assets/icons/nav_back.svg",
+      "symbol": "app_ui_icon_nav_back",
+      "format": "A8",
+      "width": 18,
+      "height": 18,
+      "bytes": 324
+    },
+    {
+      "id": "nav_home",
+      "source": "assets/icons/nav_home.svg",
+      "symbol": "app_ui_icon_nav_home",
+      "format": "A8",
+      "width": 18,
+      "height": 18,
+      "bytes": 324
+    }
+  ]
+}

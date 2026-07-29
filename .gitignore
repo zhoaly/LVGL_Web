@@ -6,3 +6,5 @@
 *.zip
 *.wasm
 *.data
+__pycache__/
+*.pyc

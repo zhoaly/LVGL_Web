@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "icons": [
+    {
+      "id": "nav_back",
+      "source": "assets/icons/nav_back.svg",
+      "symbol": "app_ui_icon_nav_back",
+      "width": 18,
+      "height": 18,
+      "format": "A8"
+    },
+    {
+      "id": "nav_home",
+      "source": "assets/icons/nav_home.svg",
+      "symbol": "app_ui_icon_nav_home",
+      "width": 18,
+      "height": 18,
+      "format": "A8"
+    }
+  ],
+  "images": [],
+  "fonts": []
+}

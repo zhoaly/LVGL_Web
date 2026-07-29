@@ -47,3 +47,37 @@ target_include_directories(test_ui_pages PRIVATE
     ../src/lvgl_app/pages/registry
 )
 add_test(NAME ui_pages COMMAND test_ui_pages)
+
+# Compile LVGL-facing UI sources against a declaration-only LVGL 9.3 stub.
+# This catches local API/type errors without requiring SDL, Emscripten or a
+# full LVGL link in the host-side unit-test build.
+add_library(test_ui_compile OBJECT
+    ../src/lvgl_app/assets/generated/App_UiIcons.c
+    ../src/lvgl_app/assets/App_UiAssets.c
+    ../src/lvgl_app/assets/App_UiTheme.c
+    ../src/lvgl_app/components/App_UiComponents.c
+    ../src/lvgl_app/view/App_UiView.c
+    ../src/lvgl_app/pages/home/App_UiPageHome.c
+    ../src/lvgl_app/pages/text/App_UiPageText.c
+)
+target_include_directories(test_ui_compile PRIVATE
+    stubs
+    ../src
+)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(test_ui_compile PRIVATE -Wall -Wextra -Werror)
+endif()
+
+find_package(Python3 QUIET COMPONENTS Interpreter)
+if(Python3_Interpreter_FOUND)
+    add_test(
+        NAME ui_assets_current
+        COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/../tools/assets/build_assets.py
+                --check
+    )
+    set_tests_properties(
+        ui_assets_current
+        PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..
+    )
+endif()

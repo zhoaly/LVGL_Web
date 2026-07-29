@@ -11,6 +11,7 @@
 
 #include "lvgl/lvgl.h"
 
+#include "../../assets/App_UiTheme.h"
 #include "../../components/App_UiComponents.h"
 
 static app_ui_action_binding_t s_text_page_binding;
@@ -35,8 +36,14 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
     /* 创建 "Ready" 标签 */
     ready_label = lv_label_create(parent);
     lv_label_set_text(ready_label, "Ready");
-    lv_obj_set_style_text_font(ready_label, &lv_font_montserrat_16, 0);
-    lv_obj_set_style_text_color(ready_label, lv_color_hex(0x4A5568), 0);
+    lv_obj_set_style_text_font(
+        ready_label,
+        App_UiTheme_GetFont(APP_UI_THEME_FONT_EMPHASIS),
+        0);
+    lv_obj_set_style_text_color(
+        ready_label,
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_PRIMARY),
+        0);
 
     /* 创建跳转到纯文字页面的按钮 */
     open_button = lv_button_create(parent);

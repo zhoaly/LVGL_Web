@@ -7,6 +7,8 @@
 
 #include "lvgl/lvgl.h"
 
+#include "../../assets/App_UiTheme.h"
+
 static void build(lv_obj_t *parent, const app_ui_model_t *model)
 {
     lv_obj_t *label;
@@ -18,8 +20,14 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
 
     label = lv_label_create(parent);
     lv_label_set_text(label, "This is a simple page.");
-    lv_obj_set_style_text_font(label, &lv_font_montserrat_16, 0);
-    lv_obj_set_style_text_color(label, lv_color_hex(0x4A5568), 0);
+    lv_obj_set_style_text_font(
+        label,
+        App_UiTheme_GetFont(APP_UI_THEME_FONT_EMPHASIS),
+        0);
+    lv_obj_set_style_text_color(
+        label,
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_PRIMARY),
+        0);
 }
 
 static void refresh(const app_ui_model_t *model)

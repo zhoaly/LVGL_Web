@@ -13,14 +13,16 @@
  *   screen_root (flex column)
  *   ├── title_label（标题栏，蓝色 16px）
  *   ├── content（内容区，flex grow=1）
- *   │   ├── NavBar（导航栏，仅非首页显示）
  *   │   └── 页面自定义内容（由 page->build 创建）
- *   └── toast_label（底部消息栏，灰色 14px）
+ *   ├── toast_label（底部消息栏，灰色 14px）
+ *   └── NavBar（底部导航栏，仅非首页显示）
  */
 
 #include "App_UiView.h"
 
 #include <string.h>
+
+#include "../assets/App_UiTheme.h"
 
 void App_UiView_Init(app_ui_view_t *view)
 {
@@ -35,7 +37,10 @@ void App_UiView_Init(app_ui_view_t *view)
 
     /* 获取当前活动屏幕并设置背景色 */
     screen = lv_screen_active();
-    lv_obj_set_style_bg_color(screen, lv_color_hex(0xFAFBFD), 0);
+    lv_obj_set_style_bg_color(
+        screen,
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_SCREEN_BACKGROUND),
+        0);
 
     /* 创建根容器：全屏 flex column 布局 */
     view->screen_root = lv_obj_create(screen);
@@ -47,8 +52,14 @@ void App_UiView_Init(app_ui_view_t *view)
 
     /* 创建标题标签 */
     view->title_label = lv_label_create(view->screen_root);
-    lv_obj_set_style_text_font(view->title_label, &lv_font_montserrat_16, 0);
-    lv_obj_set_style_text_color(view->title_label, lv_color_hex(0x2778FF), 0);
+    lv_obj_set_style_text_font(
+        view->title_label,
+        App_UiTheme_GetFont(APP_UI_THEME_FONT_TITLE),
+        0);
+    lv_obj_set_style_text_color(
+        view->title_label,
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_ACCENT),
+        0);
 
     /* 创建内容区：填充剩余空间 */
     view->content = lv_obj_create(view->screen_root);
@@ -60,8 +71,14 @@ void App_UiView_Init(app_ui_view_t *view)
 
     /* 创建 Toast 消息标签（初始为空） */
     view->toast_label = lv_label_create(view->screen_root);
-    lv_obj_set_style_text_font(view->toast_label, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(view->toast_label, lv_color_hex(0x718096), 0);
+    lv_obj_set_style_text_font(
+        view->toast_label,
+        App_UiTheme_GetFont(APP_UI_THEME_FONT_BODY),
+        0);
+    lv_obj_set_style_text_color(
+        view->toast_label,
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_MUTED),
+        0);
     lv_label_set_text(view->toast_label, "");
 }
 
@@ -78,20 +95,26 @@ void App_UiView_ShowPage(app_ui_view_t *view,
     view->active_page = page;
     lv_label_set_text(view->title_label, page->title != NULL ? page->title : "");
 
+    /* 删除上一页的导航栏，避免页面切换后残留 */
+    if(view->nav_bar != NULL) {
+        lv_obj_delete(view->nav_bar);
+        view->nav_bar = NULL;
+    }
+
     /* 清空内容区并重建 */
     lv_obj_clean(view->content);
     lv_obj_set_flex_flow(view->content, LV_FLEX_FLOW_COLUMN);
 
-    /* 非首页时显示导航栏（返回/首页按钮） */
-    if(page->id != APP_UI_PAGE_HOME) {
-        (void)App_UiComponent_CreateNavBar(view->content,
-                                          can_back && page->show_back,
-                                          view->nav_bindings);
-    }
-
     /* 调用页面构建回调创建自定义内容 */
     if(page->build != NULL) {
         page->build(view->content, model);
+    }
+
+    /* 非首页时在屏幕根容器末尾创建导航栏，使其固定在内容区下方 */
+    if(page->id != APP_UI_PAGE_HOME) {
+        view->nav_bar = App_UiComponent_CreateNavBar(view->screen_root,
+                                                     can_back && page->show_back,
+                                                     view->nav_bindings);
     }
 }
 

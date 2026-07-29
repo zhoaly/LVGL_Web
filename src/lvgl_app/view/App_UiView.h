@@ -6,9 +6,9 @@
  *   screen_root (flex column, 全屏)
  *   ├── title_label（顶部标题栏，蓝色 16px）
  *   ├── content（中间内容区，flex grow=1）
- *   │   ├── NavBar（导航栏，非首页时显示）
  *   │   └── 页面自定义控件
- *   └── toast_label（底部消息栏，灰色 14px）
+ *   ├── toast_label（底部消息栏，灰色 14px）
+ *   └── NavBar（底部导航栏，非首页时显示）
  */
 
 #ifndef APP_UI_VIEW_H
@@ -27,6 +27,7 @@ typedef struct {
     lv_obj_t *title_label;              /**< 标题栏标签 */
     lv_obj_t *content;                  /**< 内容区容器 */
     lv_obj_t *toast_label;              /**< 底部 Toast 标签 */
+    lv_obj_t *nav_bar;                  /**< 底部导航栏，首页时为 NULL */
     const app_ui_page_t *active_page;   /**< 当前活动页面 */
     app_ui_action_binding_t nav_bindings[2]; /**< 导航栏绑定（[0]=返回, [1]=首页） */
 } app_ui_view_t;

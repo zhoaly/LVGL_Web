@@ -18,18 +18,30 @@ Runtime 等演示业务已经移除，保留的代码均用于后续扩展框架
 src/lvgl_app/
 ├── app/                 UI 生命周期、事件队列和总调度
 ├── action/              通用 UI Action、Dispatcher 和任务快照
+├── assets/              资源注册、主题和自动生成的 LVGL 资源
 ├── model/               UI 状态与 dirty 标志
 ├── navigation/          页面栈和导航操作
 ├── view/                屏幕容器、页面渲染和 Toast
 ├── components/          可复用控件和 Action 绑定
 ├── pages/
 │   ├── registry/        页面描述符和页面注册表
-│   └── home/            唯一的初始页面
+│   ├── home/            首页
+│   └── text/            纯文字示例页面
 ├── port/
 │   ├── pc/              Web/SDL 平台适配
 │   └── esp32/           ESP32 平台适配骨架
 ├── CMakeLists.txt       ESP-IDF 组件构建入口
 └── idf_component.yml    ESP-IDF 组件依赖
+```
+
+设计源资源位于仓库根目录的 `assets/`。图标由
+`tools/assets/build_assets.py` 转换并写入
+`src/lvgl_app/assets/generated/`。页面和组件通过 `App_UiAssets` 获取资源，通过
+`App_UiTheme` 获取语义颜色和字体，不直接引用生成符号。
+
+```powershell
+python tools/assets/build_assets.py
+python tools/assets/build_assets.py --check
 ```
 
 ## 新增页面
@@ -65,7 +77,9 @@ cmake --build build_tests
 ctest --test-dir build_tests --output-on-failure
 ```
 
-测试覆盖通用 Action、Model 消息事件和导航栈，不依赖 LVGL 或 ESP-IDF。
+测试覆盖通用 Action、Model 消息事件和导航栈。构建过程还会使用声明桩编译
+LVGL 资源、主题、组件、View 和页面源码，并检查自动生成资源是否为最新版本；
+这些本地检查不需要 SDL、Emscripten 或完整 LVGL 链接。
 
 ## 迁移到 ESP-IDF
 

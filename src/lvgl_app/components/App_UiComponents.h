@@ -47,7 +47,7 @@ void App_UiComponent_BindAction(lv_obj_t *object, app_ui_action_binding_t *bindi
 /**
  * @brief 创建导航栏组件
  *
- * 包含可选的返回按钮和始终显示的首页按钮。
+ * 黑色圆角 Dock，包含可选的返回图标和始终显示的首页图标。
  *
  * @param parent 父容器
  * @param can_back 是否显示返回按钮
