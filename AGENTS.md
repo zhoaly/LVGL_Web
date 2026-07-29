@@ -12,6 +12,24 @@
 - UI code uses `App_UiAssets` for resource lookup and `App_UiTheme` for
   semantic colors/fonts.
 
+## Component architecture
+
+- Reusable visual components live in their own
+  `src/lvgl_app/components/<component_name>/` directory with a public header
+  and implementation file.
+- A stateful component exposes an instance context plus `Create` and `Update`
+  APIs. Pages own the instance and compose components; they do not reach into
+  a component's internal object tree.
+- Component state is plain platform-neutral data. Hardware, Wi-Fi, Bluetooth,
+  time synchronization and other services update the Model first; components
+  never call those services directly.
+- Component interactions are exposed through callbacks or the shared Action
+  layer so the component remains reusable by different pages.
+- The Home top bar is implemented by
+  `components/status_bar/App_UiStatusBar.{c,h}`. It owns menu, time, weather,
+  Wi-Fi and Bluetooth presentation, while the Home page supplies their current
+  state.
+
 ## Asset workflow
 
 - Designer-owned source assets live only under `assets/`.

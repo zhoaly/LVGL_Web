@@ -6,5 +6,8 @@
 
 extern const lv_image_dsc_t app_ui_icon_nav_back;
 extern const lv_image_dsc_t app_ui_icon_nav_home;
+extern const lv_image_dsc_t app_ui_icon_status_menu;
+extern const lv_image_dsc_t app_ui_icon_status_wifi;
+extern const lv_image_dsc_t app_ui_icon_status_bluetooth;
 
 #endif /* APP_UI_ICONS_GENERATED_H */

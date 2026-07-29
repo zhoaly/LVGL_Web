@@ -93,7 +93,13 @@ void App_UiView_ShowPage(app_ui_view_t *view,
 
     /* 更新活动页面指针和标题 */
     view->active_page = page;
-    lv_label_set_text(view->title_label, page->title != NULL ? page->title : "");
+    if(page->title != NULL && page->title[0] != '\0') {
+        lv_obj_remove_flag(view->title_label, LV_OBJ_FLAG_HIDDEN);
+        lv_label_set_text(view->title_label, page->title);
+    } else {
+        lv_label_set_text(view->title_label, "");
+        lv_obj_add_flag(view->title_label, LV_OBJ_FLAG_HIDDEN);
+    }
 
     /* 删除上一页的导航栏，避免页面切换后残留 */
     if(view->nav_bar != NULL) {

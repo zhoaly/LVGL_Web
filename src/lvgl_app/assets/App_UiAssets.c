@@ -12,6 +12,9 @@ const lv_image_dsc_t *App_UiAssets_GetIcon(app_ui_icon_id_t id)
     static const lv_image_dsc_t *const icons[APP_UI_ICON_COUNT] = {
         [APP_UI_ICON_NAV_BACK] = &app_ui_icon_nav_back,
         [APP_UI_ICON_NAV_HOME] = &app_ui_icon_nav_home,
+        [APP_UI_ICON_STATUS_MENU] = &app_ui_icon_status_menu,
+        [APP_UI_ICON_STATUS_WIFI] = &app_ui_icon_status_wifi,
+        [APP_UI_ICON_STATUS_BLUETOOTH] = &app_ui_icon_status_bluetooth,
     };
 
     if(id < 0 || id >= APP_UI_ICON_COUNT) {

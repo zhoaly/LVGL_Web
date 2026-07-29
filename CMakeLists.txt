@@ -51,6 +51,7 @@ add_executable(index
     src/lvgl_app/navigation/App_UiNav.c
     src/lvgl_app/view/App_UiView.c
     src/lvgl_app/components/App_UiComponents.c
+    src/lvgl_app/components/status_bar/App_UiStatusBar.c
     src/lvgl_app/assets/App_UiAssets.c
     src/lvgl_app/assets/App_UiTheme.c
     src/lvgl_app/assets/generated/App_UiIcons.c

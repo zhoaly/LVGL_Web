@@ -16,6 +16,30 @@
       "width": 18,
       "height": 18,
       "format": "A8"
+    },
+    {
+      "id": "status_menu",
+      "source": "assets/icons/status_menu.svg",
+      "symbol": "app_ui_icon_status_menu",
+      "width": 18,
+      "height": 18,
+      "format": "A8"
+    },
+    {
+      "id": "status_wifi",
+      "source": "assets/icons/status_wifi.svg",
+      "symbol": "app_ui_icon_status_wifi",
+      "width": 18,
+      "height": 18,
+      "format": "A8"
+    },
+    {
+      "id": "status_bluetooth",
+      "source": "assets/icons/status_bluetooth.svg",
+      "symbol": "app_ui_icon_status_bluetooth",
+      "width": 18,
+      "height": 18,
+      "format": "A8"
     }
   ],
   "images": [],

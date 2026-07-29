@@ -7,6 +7,7 @@ idf_component_register(
         "navigation/App_UiNav.c"
         "view/App_UiView.c"
         "components/App_UiComponents.c"
+        "components/status_bar/App_UiStatusBar.c"
         "assets/App_UiAssets.c"
         "assets/App_UiTheme.c"
         "assets/generated/App_UiIcons.c"

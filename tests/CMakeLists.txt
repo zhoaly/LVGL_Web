@@ -56,6 +56,7 @@ add_library(test_ui_compile OBJECT
     ../src/lvgl_app/assets/App_UiAssets.c
     ../src/lvgl_app/assets/App_UiTheme.c
     ../src/lvgl_app/components/App_UiComponents.c
+    ../src/lvgl_app/components/status_bar/App_UiStatusBar.c
     ../src/lvgl_app/view/App_UiView.c
     ../src/lvgl_app/pages/home/App_UiPageHome.c
     ../src/lvgl_app/pages/text/App_UiPageText.c

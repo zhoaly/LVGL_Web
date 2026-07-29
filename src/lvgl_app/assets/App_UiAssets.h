@@ -11,6 +11,9 @@
 typedef enum {
     APP_UI_ICON_NAV_BACK = 0,
     APP_UI_ICON_NAV_HOME,
+    APP_UI_ICON_STATUS_MENU,
+    APP_UI_ICON_STATUS_WIFI,
+    APP_UI_ICON_STATUS_BLUETOOTH,
     APP_UI_ICON_COUNT,
 } app_ui_icon_id_t;
 

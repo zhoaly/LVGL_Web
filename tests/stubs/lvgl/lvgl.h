@@ -62,11 +62,13 @@ typedef struct {
 #define LV_STATE_PRESSED 0x0020
 #define LV_STATE_FOCUSED 0x0002
 #define LV_OBJ_FLAG_CLICKABLE 0x0100
+#define LV_OBJ_FLAG_HIDDEN 0x0200
 
 #define LV_FLEX_FLOW_ROW 0
 #define LV_FLEX_FLOW_COLUMN 1
 #define LV_FLEX_ALIGN_CENTER 0
 #define LV_FLEX_ALIGN_SPACE_BETWEEN 1
+#define LV_FLEX_ALIGN_START 2
 
 #define LV_SIZE_CONTENT (-1)
 #define LV_PCT(value) (value)
@@ -93,6 +95,7 @@ void lv_obj_set_flex_align(lv_obj_t *object,
 void lv_obj_set_flex_grow(lv_obj_t *object, uint8_t grow);
 void lv_obj_center(lv_obj_t *object);
 void lv_obj_add_flag(lv_obj_t *object, uint32_t flag);
+void lv_obj_remove_flag(lv_obj_t *object, uint32_t flag);
 void lv_obj_add_event_cb(lv_obj_t *object,
                          lv_event_cb_t callback,
                          lv_event_code_t filter,
