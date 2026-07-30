@@ -23,6 +23,13 @@
 /* 前向声明 LVGL 对象类型，避免在头文件中包含 lvgl.h */
 typedef struct _lv_obj_t lv_obj_t;
 
+typedef enum {
+    APP_UI_PAGE_TRANSITION_INITIAL = 0,
+    APP_UI_PAGE_TRANSITION_PUSH,
+    APP_UI_PAGE_TRANSITION_BACK,
+    APP_UI_PAGE_TRANSITION_HOME,
+} app_ui_page_transition_t;
+
 /**
  * @brief 页面描述符结构体
  */
@@ -33,6 +40,7 @@ typedef struct {
     bool show_back;                         /**< 是否显示返回按钮 */
     void (*build)(lv_obj_t *parent, const app_ui_model_t *model);     /**< 构建 UI 回调 */
     void (*refresh)(const app_ui_model_t *model);                     /**< 刷新数据回调 */
+    void (*enter)(app_ui_page_transition_t transition);
 } app_ui_page_t;
 
 /**

@@ -12,11 +12,14 @@
 #include "../../assets/App_UiTheme.h"
 #include "../../components/App_UiComponents.h"
 #include "../../components/menu_drawer/App_UiMenuDrawer.h"
+#include "../../components/motion/App_UiMotion.h"
 #include "../../components/status_bar/App_UiStatusBar.h"
 
 static app_ui_action_binding_t s_text_page_binding;
 static app_ui_status_bar_t s_status_bar;
 static app_ui_menu_drawer_t s_menu_drawer;
+static lv_obj_t *s_ready_label;
+static lv_obj_t *s_open_button;
 
 static const app_ui_menu_drawer_item_t s_menu_items[] = {
     {
@@ -126,6 +129,8 @@ static void menu_open_cb(void *user_data)
 static void home_root_delete_cb(lv_event_t *event)
 {
     App_UiMenuDrawer_Destroy(lv_event_get_user_data(event));
+    s_ready_label = NULL;
+    s_open_button = NULL;
 }
 
 static void build(lv_obj_t *parent, const app_ui_model_t *model)
@@ -184,6 +189,7 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
     lv_obj_set_style_pad_row(body, 8, 0);
 
     ready_label = lv_label_create(body);
+    s_ready_label = ready_label;
     lv_label_set_text(ready_label, "Ready");
     lv_obj_set_style_text_font(
         ready_label,
@@ -195,6 +201,7 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
         0);
 
     open_button = lv_button_create(body);
+    s_open_button = open_button;
     lv_obj_remove_style_all(open_button);
     lv_obj_set_size(open_button, 132, 40);
     lv_obj_set_style_radius(open_button, 12, 0);
@@ -236,6 +243,20 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
     App_UiComponent_BindAction(open_button, &s_text_page_binding);
 }
 
+static void enter(app_ui_page_transition_t transition)
+{
+    if(transition == APP_UI_PAGE_TRANSITION_INITIAL) {
+        return;
+    }
+
+    App_UiMotion_AnimateEnter(
+        s_status_bar.root, APP_UI_MOTION_OPACITY_NONE, -4, 0);
+    App_UiMotion_AnimateEnter(
+        s_ready_label, APP_UI_MOTION_OPACITY_TEXT, 4, 20);
+    App_UiMotion_AnimateEnter(
+        s_open_button, APP_UI_MOTION_OPACITY_BACKGROUND, 4, 40);
+}
+
 static void refresh(const app_ui_model_t *model)
 {
     app_ui_status_bar_state_t status_state;
@@ -261,6 +282,7 @@ const app_ui_page_t *App_UiPageHome_Get(void)
         .show_back = false,
         .build = build,
         .refresh = refresh,
+        .enter = enter,
     };
     return &page;
 }

@@ -5,8 +5,9 @@
 - The project targets LVGL 9.3 on WebAssembly/SDL and keeps
   `src/lvgl_app/` portable to ESP-IDF.
 - Pages are static descriptors registered in
-  `src/lvgl_app/pages/registry/App_UiPages.c`. Page switches rebuild the shared
-  content container.
+  `src/lvgl_app/pages/registry/App_UiPages.c`. The View keeps active and
+  outgoing page hosts inside the shared content viewport so Push/Back can
+  animate safely; title and bottom navigation remain outside those hosts.
 - The navigation bar is a bottom-level child of `screen_root`, not a page
   child. It uses a black-and-white image-based icon style.
 - UI code uses `App_UiAssets` for resource lookup and `App_UiTheme` for
@@ -42,6 +43,12 @@
 - Interactive components use `App_UiComponent_ApplyFocusStyle()` for consistent
   light- or dark-surface focus feedback. Keep focus visible for encoder input,
   but avoid hard-coded blue outlines.
+- Shared motion tokens and helpers live in
+  `components/motion/App_UiMotion.{c,h}`. Buttons use style transitions;
+  page hosts, small status icons and Toast use `lv_anim`. Runtime levels are
+  Normal, Reduced and Off, with Normal as the default. Do not animate full-page
+  opacity or zoom, and keep repeating animations limited to small transient
+  status icons.
 - Web-only mock controls and Emscripten bridges live outside `src/lvgl_app/`.
   They must feed the same typed event path used by future ESP32 services and
   must not be added to the ESP-IDF component source list.

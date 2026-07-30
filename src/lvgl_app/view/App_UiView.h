@@ -30,6 +30,9 @@ typedef struct {
     lv_obj_t *nav_bar;                  /**< 底部导航栏，首页时为 NULL */
     const app_ui_page_t *active_page;   /**< 当前活动页面 */
     app_ui_action_binding_t nav_bindings[2]; /**< 导航栏绑定（[0]=返回, [1]=首页） */
+    lv_obj_t *active_page_host;
+    lv_obj_t *outgoing_page_host;
+    bool transitioning;
 } app_ui_view_t;
 
 /**
@@ -48,7 +51,8 @@ void App_UiView_Init(app_ui_view_t *view);
 void App_UiView_ShowPage(app_ui_view_t *view,
                          const app_ui_page_t *page,
                          const app_ui_model_t *model,
-                         bool can_back);
+                         bool can_back,
+                         app_ui_page_transition_t transition);
 
 /**
  * @brief 刷新当前页面的数据展示

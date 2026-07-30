@@ -54,6 +54,9 @@ typedef struct {
     lv_obj_t *wifi_icon;
     lv_obj_t *bluetooth_button;
     lv_obj_t *bluetooth_icon;
+    app_ui_status_wifi_state_t wifi_state;
+    app_ui_status_bluetooth_state_t bluetooth_state;
+    bool state_initialized;
     app_ui_status_bar_callbacks_t callbacks;
 } app_ui_status_bar_t;
 

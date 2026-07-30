@@ -14,6 +14,11 @@ typedef struct _lv_obj_t lv_obj_t;
 typedef struct _lv_event_t lv_event_t;
 typedef struct _lv_timer_t lv_timer_t;
 typedef uint8_t lv_opa_t;
+typedef int32_t lv_style_prop_t;
+
+typedef struct {
+    uint32_t placeholder;
+} lv_style_transition_dsc_t;
 
 typedef struct _lv_anim_t {
     uint32_t placeholder;
@@ -66,10 +71,28 @@ typedef struct {
 #define LV_OPA_40 102
 #define LV_OPA_COVER 255
 
+#define LV_STATE_DEFAULT 0x0000
+#define LV_STATE_CHECKED 0x0001
 #define LV_STATE_PRESSED 0x0020
 #define LV_STATE_FOCUSED 0x0002
 #define LV_OBJ_FLAG_CLICKABLE 0x0100
 #define LV_OBJ_FLAG_HIDDEN 0x0200
+#define LV_OBJ_FLAG_SCROLLABLE 0x0400
+
+#define LV_PART_INDICATOR 0x010000
+#define LV_PART_KNOB 0x020000
+
+#define LV_STYLE_TRANSFORM_WIDTH 1
+#define LV_STYLE_TRANSFORM_HEIGHT 2
+#define LV_STYLE_TRANSLATE_Y 3
+#define LV_STYLE_BG_COLOR 4
+#define LV_STYLE_BG_OPA 5
+#define LV_STYLE_BORDER_COLOR 6
+#define LV_STYLE_BORDER_OPA 7
+#define LV_STYLE_SHADOW_OPA 8
+#define LV_STYLE_SHADOW_OFFSET_Y 9
+
+#define LV_ANIM_REPEAT_INFINITE UINT32_MAX
 
 #define LV_FLEX_FLOW_ROW 0
 #define LV_FLEX_FLOW_COLUMN 1
@@ -142,12 +165,41 @@ void lv_obj_set_style_text_color(lv_obj_t *object, lv_color_t value, int32_t sel
 void lv_obj_set_style_text_font(lv_obj_t *object,
                                 const lv_font_t *value,
                                 int32_t selector);
+void lv_obj_set_style_transform_width(lv_obj_t *object,
+                                      int32_t value,
+                                      int32_t selector);
+void lv_obj_set_style_transform_height(lv_obj_t *object,
+                                       int32_t value,
+                                       int32_t selector);
+void lv_obj_set_style_translate_y(lv_obj_t *object,
+                                  int32_t value,
+                                  int32_t selector);
+void lv_obj_set_style_text_opa(lv_obj_t *object,
+                               int32_t value,
+                               int32_t selector);
+void lv_obj_set_style_image_opa(lv_obj_t *object,
+                                int32_t value,
+                                int32_t selector);
+void lv_obj_set_style_transition(
+    lv_obj_t *object,
+    const lv_style_transition_dsc_t *transition,
+    int32_t selector);
+void lv_style_transition_dsc_init(
+    lv_style_transition_dsc_t *transition,
+    const lv_style_prop_t properties[],
+    lv_anim_path_cb_t path,
+    uint32_t duration,
+    uint32_t delay,
+    void *user_data);
 
 void lv_anim_init(lv_anim_t *animation);
 void lv_anim_set_var(lv_anim_t *animation, void *variable);
 void lv_anim_set_exec_cb(lv_anim_t *animation, lv_anim_exec_xcb_t callback);
 void lv_anim_set_values(lv_anim_t *animation, int32_t start, int32_t end);
 void lv_anim_set_duration(lv_anim_t *animation, uint32_t duration);
+void lv_anim_set_delay(lv_anim_t *animation, uint32_t delay);
+void lv_anim_set_reverse_duration(lv_anim_t *animation, uint32_t duration);
+void lv_anim_set_repeat_count(lv_anim_t *animation, uint32_t count);
 void lv_anim_set_path_cb(lv_anim_t *animation, lv_anim_path_cb_t callback);
 void lv_anim_set_user_data(lv_anim_t *animation, void *user_data);
 void lv_anim_set_completed_cb(lv_anim_t *animation,

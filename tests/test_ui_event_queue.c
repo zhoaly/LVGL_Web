@@ -17,6 +17,11 @@ struct _lv_timer_t {
 static struct _lv_timer_t s_timer;
 static app_ui_model_t s_refreshed_model;
 static unsigned int s_refresh_count;
+static unsigned int s_show_count;
+static app_ui_page_id_t s_shown_page;
+static app_ui_page_transition_t s_shown_transition;
+static app_action_ui_dispatcher_fn s_dispatcher;
+static void *s_dispatcher_user_data;
 
 lv_timer_t *lv_timer_create(
     lv_timer_cb_t callback,
@@ -56,8 +61,8 @@ esp_err_t app_action_register_ui_dispatcher(
     app_action_ui_dispatcher_fn dispatcher,
     void *user_data)
 {
-    (void)dispatcher;
-    (void)user_data;
+    s_dispatcher = dispatcher;
+    s_dispatcher_user_data = user_data;
     return ESP_OK;
 }
 
@@ -71,8 +76,19 @@ const app_ui_page_t *App_UiPages_Get(app_ui_page_id_t page_id)
         .build = NULL,
         .refresh = NULL,
     };
+    static const app_ui_page_t text_page = {
+        .id = APP_UI_PAGE_TEXT,
+        .title = "Text",
+        .dirty_mask = APP_UI_DIRTY_SYSTEM,
+        .show_back = true,
+        .build = NULL,
+        .refresh = NULL,
+    };
 
-    return page_id == APP_UI_PAGE_HOME ? &home_page : NULL;
+    if(page_id == APP_UI_PAGE_HOME) {
+        return &home_page;
+    }
+    return page_id == APP_UI_PAGE_TEXT ? &text_page : NULL;
 }
 
 void App_UiView_Init(app_ui_view_t *view)
@@ -84,12 +100,15 @@ void App_UiView_ShowPage(
     app_ui_view_t *view,
     const app_ui_page_t *page,
     const app_ui_model_t *model,
-    bool can_back)
+    bool can_back,
+    app_ui_page_transition_t transition)
 {
     (void)view;
-    (void)page;
     (void)model;
     (void)can_back;
+    s_show_count++;
+    s_shown_page = page->id;
+    s_shown_transition = transition;
 }
 
 void App_UiView_Refresh(
@@ -110,11 +129,16 @@ void App_UiView_ShowToast(app_ui_view_t *view, const char *message)
 int main(void)
 {
     app_ui_event_t event;
+    app_action_request_t request;
     unsigned int index;
 
     assert(App_UiInit());
     assert(App_UiStart());
     assert(s_timer.callback != NULL);
+    assert(s_dispatcher != NULL);
+    assert(s_show_count == 1u);
+    assert(s_shown_page == APP_UI_PAGE_HOME);
+    assert(s_shown_transition == APP_UI_PAGE_TRANSITION_INITIAL);
 
     memset(&event, 0, sizeof(event));
     event.type = APP_UI_EVENT_TIME_UPDATED;
@@ -136,5 +160,29 @@ int main(void)
     assert(s_refreshed_model.status.time.hour == 9u);
     assert(s_refreshed_model.status.time.minute == 14u);
     assert(s_refreshed_model.status.time.synced);
+
+    memset(&request, 0, sizeof(request));
+    request.id = APP_ACTION_ID_UI_NAV_PUSH;
+    request.params.ui_navigation.page_id = APP_UI_PAGE_TEXT;
+    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    s_timer.callback(&s_timer);
+    assert(s_shown_page == APP_UI_PAGE_TEXT);
+    assert(s_shown_transition == APP_UI_PAGE_TRANSITION_PUSH);
+
+    request.id = APP_ACTION_ID_UI_NAV_BACK;
+    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    s_timer.callback(&s_timer);
+    assert(s_shown_page == APP_UI_PAGE_HOME);
+    assert(s_shown_transition == APP_UI_PAGE_TRANSITION_BACK);
+
+    request.id = APP_ACTION_ID_UI_NAV_PUSH;
+    request.params.ui_navigation.page_id = APP_UI_PAGE_TEXT;
+    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    s_timer.callback(&s_timer);
+    request.id = APP_ACTION_ID_UI_NAV_HOME;
+    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    s_timer.callback(&s_timer);
+    assert(s_shown_page == APP_UI_PAGE_HOME);
+    assert(s_shown_transition == APP_UI_PAGE_TRANSITION_HOME);
     return 0;
 }

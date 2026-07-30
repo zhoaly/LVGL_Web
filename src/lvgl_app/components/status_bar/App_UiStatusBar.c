@@ -10,6 +10,7 @@
 #include "../../assets/App_UiAssets.h"
 #include "../../assets/App_UiTheme.h"
 #include "../App_UiComponents.h"
+#include "../motion/App_UiMotion.h"
 
 enum {
     STATUS_BAR_HEIGHT = 32,
@@ -53,6 +54,22 @@ static void bluetooth_click_cb(lv_event_t *event)
     if(status_bar != NULL && status_bar->callbacks.on_bluetooth != NULL) {
         status_bar->callbacks.on_bluetooth(status_bar->callbacks.user_data);
     }
+}
+
+static void status_bar_delete_cb(lv_event_t *event)
+{
+    app_ui_status_bar_t *status_bar = lv_event_get_user_data(event);
+
+    if(status_bar == NULL) {
+        return;
+    }
+
+    App_UiMotion_StopObject(status_bar->wifi_icon);
+    App_UiMotion_StopObject(status_bar->bluetooth_icon);
+    status_bar->root = NULL;
+    status_bar->wifi_icon = NULL;
+    status_bar->bluetooth_icon = NULL;
+    status_bar->state_initialized = false;
 }
 
 static lv_obj_t *create_slot(lv_obj_t *parent, int32_t width)
@@ -155,6 +172,11 @@ lv_obj_t *App_UiStatusBar_Create(
     lv_obj_set_flex_flow(status_bar->root, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(status_bar->root, LV_FLEX_ALIGN_START,
                           LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_add_event_cb(
+        status_bar->root,
+        status_bar_delete_cb,
+        LV_EVENT_DELETE,
+        status_bar);
 
     left_slot = create_slot(status_bar->root, STATUS_BAR_SIDE_WIDTH);
     status_bar->menu_button = lv_button_create(left_slot);
@@ -231,6 +253,9 @@ void App_UiStatusBar_Update(
     app_ui_status_bar_t *status_bar,
     const app_ui_status_bar_state_t *state)
 {
+    bool wifi_changed;
+    bool bluetooth_changed;
+
     if(status_bar == NULL || status_bar->root == NULL) {
         return;
     }
@@ -260,10 +285,44 @@ void App_UiStatusBar_Update(
                 ? APP_UI_THEME_COLOR_TEXT_PRIMARY
                 : APP_UI_THEME_COLOR_TEXT_MUTED),
         0);
-    lv_obj_set_style_image_recolor(
-        status_bar->wifi_icon, wifi_color(state->wifi_state), 0);
-    lv_obj_set_style_image_recolor(
-        status_bar->bluetooth_icon,
-        bluetooth_color(state->bluetooth_state),
-        0);
+    wifi_changed =
+        !status_bar->state_initialized ||
+        status_bar->wifi_state != state->wifi_state;
+    bluetooth_changed =
+        !status_bar->state_initialized ||
+        status_bar->bluetooth_state != state->bluetooth_state;
+
+    if(wifi_changed) {
+        lv_obj_set_style_image_recolor(
+            status_bar->wifi_icon, wifi_color(state->wifi_state), 0);
+        if(state->wifi_state == APP_UI_STATUS_WIFI_CONNECTING) {
+            App_UiMotion_StartImagePulse(status_bar->wifi_icon);
+        } else if(status_bar->state_initialized) {
+            App_UiMotion_SettleImage(status_bar->wifi_icon);
+        } else {
+            App_UiMotion_StopObject(status_bar->wifi_icon);
+            lv_obj_set_style_image_opa(
+                status_bar->wifi_icon, LV_OPA_COVER, 0);
+        }
+        status_bar->wifi_state = state->wifi_state;
+    }
+
+    if(bluetooth_changed) {
+        lv_obj_set_style_image_recolor(
+            status_bar->bluetooth_icon,
+            bluetooth_color(state->bluetooth_state),
+            0);
+        if(state->bluetooth_state ==
+           APP_UI_STATUS_BLUETOOTH_ADVERTISING) {
+            App_UiMotion_StartImagePulse(status_bar->bluetooth_icon);
+        } else if(status_bar->state_initialized) {
+            App_UiMotion_SettleImage(status_bar->bluetooth_icon);
+        } else {
+            App_UiMotion_StopObject(status_bar->bluetooth_icon);
+            lv_obj_set_style_image_opa(
+                status_bar->bluetooth_icon, LV_OPA_COVER, 0);
+        }
+        status_bar->bluetooth_state = state->bluetooth_state;
+    }
+    status_bar->state_initialized = true;
 }

@@ -35,6 +35,9 @@ target_include_directories(test_ui_event_queue PRIVATE
     stubs
     ../src
 )
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(test_ui_event_queue PRIVATE -Wall -Wextra -Werror)
+endif()
 add_test(NAME ui_event_queue COMMAND test_ui_event_queue)
 
 add_executable(test_ui_navigation
@@ -46,6 +49,19 @@ target_include_directories(test_ui_navigation PRIVATE
     ../src/lvgl_app/navigation
 )
 add_test(NAME ui_navigation COMMAND test_ui_navigation)
+
+add_executable(test_ui_motion
+    test_ui_motion.c
+    ../src/lvgl_app/components/motion/App_UiMotion.c
+)
+target_include_directories(test_ui_motion PRIVATE
+    stubs
+    ../src
+)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(test_ui_motion PRIVATE -Wall -Wextra -Werror)
+endif()
+add_test(NAME ui_motion COMMAND test_ui_motion)
 
 add_executable(test_ui_pages
     test_ui_pages.c
@@ -72,6 +88,7 @@ add_library(test_ui_compile OBJECT
     ../src/lvgl_app/assets/App_UiTheme.c
     ../src/lvgl_app/components/App_UiComponents.c
     ../src/lvgl_app/components/menu_drawer/App_UiMenuDrawer.c
+    ../src/lvgl_app/components/motion/App_UiMotion.c
     ../src/lvgl_app/components/status_bar/App_UiStatusBar.c
     ../src/lvgl_app/view/App_UiView.c
     ../src/lvgl_app/pages/home/App_UiPageHome.c

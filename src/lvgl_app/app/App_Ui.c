@@ -136,7 +136,8 @@ static bool queue_pop(app_ui_queue_item_t *item)
  * @param full_refresh 是否执行全屏刷新
  * @return true 成功
  */
-static bool show_current_page(bool full_refresh)
+static bool show_current_page(bool full_refresh,
+                              app_ui_page_transition_t transition)
 {
     const app_ui_page_t *page = App_UiPages_Get(App_UiNav_Current(&s_ui.nav));
 
@@ -145,7 +146,11 @@ static bool show_current_page(bool full_refresh)
     }
 
     App_UiModel_SetCurrentPage(&s_ui.model, page->id);
-    App_UiView_ShowPage(&s_ui.view, page, &s_ui.model, App_UiNav_CanBack(&s_ui.nav));
+    App_UiView_ShowPage(&s_ui.view,
+                        page,
+                        &s_ui.model,
+                        App_UiNav_CanBack(&s_ui.nav),
+                        transition);
     s_ui.model.dirty_mask &= ~APP_UI_DIRTY_NAV;
     App_UiPort_RequestFlush(full_refresh);
     return true;
@@ -192,6 +197,7 @@ static esp_err_t ui_action_dispatcher(const app_action_request_t *request, void 
 static void process_navigation(const app_ui_queue_item_t *item)
 {
     bool changed = false;
+    app_ui_page_transition_t transition = APP_UI_PAGE_TRANSITION_INITIAL;
 
     if(item == NULL) {
         return;
@@ -200,15 +206,18 @@ static void process_navigation(const app_ui_queue_item_t *item)
     switch(item->data.navigation.action_id) {
     case APP_ACTION_ID_UI_NAV_BACK:
         changed = App_UiNav_Back(&s_ui.nav);
+        transition = APP_UI_PAGE_TRANSITION_BACK;
         break;
     case APP_ACTION_ID_UI_NAV_HOME:
         changed = App_UiNav_Current(&s_ui.nav) != APP_UI_PAGE_HOME ||
                   App_UiNav_CanBack(&s_ui.nav);
         App_UiNav_Home(&s_ui.nav, APP_UI_PAGE_HOME);
+        transition = APP_UI_PAGE_TRANSITION_HOME;
         break;
     case APP_ACTION_ID_UI_NAV_PUSH:
         if(App_UiPages_Get(item->data.navigation.page_id) != NULL) {
             changed = App_UiNav_Push(&s_ui.nav, item->data.navigation.page_id);
+            transition = APP_UI_PAGE_TRANSITION_PUSH;
         }
         break;
     default:
@@ -216,7 +225,7 @@ static void process_navigation(const app_ui_queue_item_t *item)
     }
 
     if(changed) {
-        (void)show_current_page(true);
+        (void)show_current_page(true, transition);
     }
 }
 
@@ -306,7 +315,7 @@ bool App_UiStart(void)
         return true;
     }
 
-    if(!show_current_page(true)) {
+    if(!show_current_page(true, APP_UI_PAGE_TRANSITION_INITIAL)) {
         return false;
     }
 

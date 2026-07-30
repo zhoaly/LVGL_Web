@@ -13,6 +13,7 @@
 
 #include "../assets/App_UiAssets.h"
 #include "../assets/App_UiTheme.h"
+#include "motion/App_UiMotion.h"
 
 void App_UiComponent_ApplyFocusStyle(
     lv_obj_t *object,
@@ -57,6 +58,8 @@ void App_UiComponent_ApplyFocusStyle(
             LV_STATE_FOCUSED);
         lv_obj_set_style_border_opa(object, LV_OPA_40, LV_STATE_FOCUSED);
     }
+
+    App_UiMotion_ApplyButton(object);
 }
 
 /**
