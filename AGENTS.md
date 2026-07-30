@@ -8,8 +8,9 @@
   `src/lvgl_app/pages/registry/App_UiPages.c`. The View keeps active and
   outgoing page hosts inside the shared content viewport so Push/Back can
   animate safely; title and bottom navigation remain outside those hosts.
-- The navigation bar is a bottom-level child of `screen_root`, not a page
-  child. It uses a black-and-white image-based icon style.
+- The navigation bar is a floating bottom-level child of `screen_root`, not a
+  page child. It is excluded from the root Flex layout so it never shrinks the
+  content viewport, and uses a black-and-white image-based icon style.
 - UI code uses `App_UiAssets` for resource lookup and `App_UiTheme` for
   semantic colors/fonts.
 - Runtime data sources publish typed `app_ui_event_t` values through

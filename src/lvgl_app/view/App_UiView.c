@@ -26,26 +26,71 @@
 #include "../components/motion/App_UiMotion.h"
 
 enum {
-    PAGE_ENTER_OFFSET = 16,
-    PAGE_EXIT_OFFSET = 8,
+    NAV_BAR_ENTER_CLEARANCE = 16,
 };
 
-static void page_transition_completed_cb(lv_anim_t *animation)
+static void apply_active_page_title(app_ui_view_t *view)
 {
-    app_ui_view_t *view = lv_anim_get_user_data(animation);
+    const app_ui_page_t *page = view->active_page;
 
-    if(view == NULL) {
-        return;
+    if(page->title != NULL && page->title[0] != '\0') {
+        lv_obj_remove_flag(view->title_label, LV_OBJ_FLAG_HIDDEN);
+        lv_label_set_text(view->title_label, page->title);
+    } else {
+        lv_label_set_text(view->title_label, "");
+        lv_obj_add_flag(view->title_label, LV_OBJ_FLAG_HIDDEN);
     }
-    if(view->outgoing_page_host != NULL) {
-        lv_obj_delete(view->outgoing_page_host);
-        view->outgoing_page_host = NULL;
-    }
-    view->transitioning = false;
 }
 
-static void settle_page_transition(app_ui_view_t *view)
+static void prepare_nav_bar_enter(app_ui_view_t *view)
 {
+    int32_t nav_height;
+
+    view->nav_enter_pending = false;
+    view->nav_enter_offset = 0;
+    if(view->nav_bar == NULL ||
+       App_UiMotion_GetLevel() != APP_UI_MOTION_LEVEL_NORMAL) {
+        return;
+    }
+
+    lv_obj_update_layout(view->screen_root);
+    nav_height = lv_obj_get_height(view->nav_bar);
+    if(nav_height <= 0) {
+        return;
+    }
+
+    view->nav_enter_offset = nav_height + NAV_BAR_ENTER_CLEARANCE;
+    view->nav_enter_pending = true;
+    lv_obj_set_style_translate_y(
+        view->nav_bar, view->nav_enter_offset, 0);
+}
+
+static void start_nav_bar_enter(app_ui_view_t *view)
+{
+    int32_t offset = view->nav_enter_offset;
+
+    view->nav_enter_pending = false;
+    view->nav_enter_offset = 0;
+    if(view->nav_bar == NULL) {
+        return;
+    }
+    if(App_UiMotion_GetLevel() != APP_UI_MOTION_LEVEL_NORMAL ||
+       offset <= 0) {
+        lv_obj_set_style_translate_y(view->nav_bar, 0, 0);
+        return;
+    }
+
+    App_UiMotion_AnimateEnter(
+        view->nav_bar,
+        APP_UI_MOTION_OPACITY_NONE,
+        offset,
+        0);
+}
+
+static void complete_page_transition(app_ui_view_t *view)
+{
+    app_ui_page_transition_t transition = view->pending_transition;
+
     if(view->outgoing_page_host != NULL) {
         App_UiMotion_StopObject(view->outgoing_page_host);
         lv_obj_delete(view->outgoing_page_host);
@@ -55,7 +100,52 @@ static void settle_page_transition(app_ui_view_t *view)
         App_UiMotion_StopObject(view->active_page_host);
         lv_obj_set_x(view->active_page_host, 0);
     }
+
     view->transitioning = false;
+    view->pending_transition = APP_UI_PAGE_TRANSITION_INITIAL;
+    apply_active_page_title(view);
+
+    if(view->nav_enter_pending) {
+        start_nav_bar_enter(view);
+    }
+
+    if(view->active_page != NULL &&
+       view->active_page->enter != NULL &&
+       transition != APP_UI_PAGE_TRANSITION_INITIAL) {
+        view->active_page->enter(transition);
+    }
+}
+
+static void page_transition_completed_cb(lv_anim_t *animation)
+{
+    app_ui_view_t *view = lv_anim_get_user_data(animation);
+
+    if(view == NULL) {
+        return;
+    }
+
+    /*
+     * 当前回调属于 outgoing_page_host 的动画。不要在完成回调中再次
+     * lv_anim_delete() 当前动画，直接删除宿主后再统一收尾目标页面。
+     */
+    if(view->outgoing_page_host != NULL) {
+        lv_obj_delete(view->outgoing_page_host);
+        view->outgoing_page_host = NULL;
+    }
+    complete_page_transition(view);
+}
+
+static void settle_page_transition(app_ui_view_t *view)
+{
+    if(view->transitioning || view->outgoing_page_host != NULL) {
+        complete_page_transition(view);
+        return;
+    }
+
+    if(view->active_page_host != NULL) {
+        App_UiMotion_StopObject(view->active_page_host);
+        lv_obj_set_x(view->active_page_host, 0);
+    }
 }
 
 static lv_obj_t *create_page_host(lv_obj_t *parent)
@@ -138,6 +228,8 @@ void App_UiView_ShowPage(app_ui_view_t *view,
     bool use_directional_motion;
     int32_t enter_x;
     int32_t exit_x;
+    int32_t page_width;
+    bool nav_was_visible;
 
     if(view == NULL || page == NULL || model == NULL) {
         return;
@@ -148,32 +240,34 @@ void App_UiView_ShowPage(app_ui_view_t *view,
     new_host = create_page_host(view->content);
     view->active_page_host = new_host;
 
-    /* 更新活动页面指针和标题 */
+    /* 更新活动页面指针；标题在页面切换完成后再替换。 */
     view->active_page = page;
-    if(page->title != NULL && page->title[0] != '\0') {
-        lv_obj_remove_flag(view->title_label, LV_OBJ_FLAG_HIDDEN);
-        lv_label_set_text(view->title_label, page->title);
-    } else {
-        lv_label_set_text(view->title_label, "");
-        lv_obj_add_flag(view->title_label, LV_OBJ_FLAG_HIDDEN);
-    }
+    view->pending_transition = transition;
 
     /* 删除上一页的导航栏，避免页面切换后残留 */
+    nav_was_visible = view->nav_bar != NULL;
     if(view->nav_bar != NULL) {
+        App_UiMotion_StopObject(view->nav_bar);
         lv_obj_delete(view->nav_bar);
         view->nav_bar = NULL;
     }
+    view->nav_enter_pending = false;
+    view->nav_enter_offset = 0;
 
     /* 调用页面构建回调创建自定义内容 */
     if(page->build != NULL) {
         page->build(new_host, model);
     }
 
-    /* 非首页时在屏幕根容器末尾创建导航栏，使其固定在内容区下方 */
+    /* 非首页时创建屏幕级浮动导航栏，使其固定在屏幕底部。 */
     if(page->id != APP_UI_PAGE_HOME) {
         view->nav_bar = App_UiComponent_CreateNavBar(view->screen_root,
                                                      can_back && page->show_back,
                                                      view->nav_bindings);
+        if(!nav_was_visible &&
+           transition != APP_UI_PAGE_TRANSITION_INITIAL) {
+            prepare_nav_bar_enter(view);
+        }
     }
 
     use_directional_motion =
@@ -183,12 +277,16 @@ void App_UiView_ShowPage(app_ui_view_t *view,
          transition == APP_UI_PAGE_TRANSITION_BACK);
 
     if(use_directional_motion) {
+        lv_obj_update_layout(view->content);
+        page_width = lv_obj_get_width(view->content);
+        use_directional_motion = page_width > 0;
+    }
+
+    if(use_directional_motion) {
         enter_x = transition == APP_UI_PAGE_TRANSITION_PUSH
-                      ? PAGE_ENTER_OFFSET
-                      : -PAGE_ENTER_OFFSET;
-        exit_x = transition == APP_UI_PAGE_TRANSITION_PUSH
-                     ? -PAGE_EXIT_OFFSET
-                     : PAGE_EXIT_OFFSET;
+                      ? page_width
+                      : -page_width;
+        exit_x = -enter_x;
         lv_obj_set_x(new_host, enter_x);
         view->outgoing_page_host = old_host;
         view->transitioning = true;
@@ -205,12 +303,11 @@ void App_UiView_ShowPage(app_ui_view_t *view,
                                    APP_UI_MOTION_DURATION_PAGE,
                                    page_transition_completed_cb,
                                    view);
-    } else if(old_host != NULL) {
-        lv_obj_delete(old_host);
-    }
-
-    if(page->enter != NULL && transition != APP_UI_PAGE_TRANSITION_INITIAL) {
-        page->enter(transition);
+    } else {
+        if(old_host != NULL) {
+            lv_obj_delete(old_host);
+        }
+        complete_page_transition(view);
     }
 }
 

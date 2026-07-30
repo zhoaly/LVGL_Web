@@ -190,6 +190,11 @@ lv_obj_t *App_UiComponent_CreateNavBar(lv_obj_t *parent,
     /* 黑色圆角悬浮 Dock，按钮以黑白图标呈现 */
     row = lv_obj_create(parent);
     lv_obj_remove_style_all(row);
+    /*
+     * 导航栏是屏幕级浮动 Dock，不参与 screen_root 的 Flex 布局，
+     * 避免显示或执行 translate 动画时压缩页面内容区域。
+     */
+    lv_obj_add_flag(row, LV_OBJ_FLAG_FLOATING);
     lv_obj_set_width(row, LV_PCT(100));
     lv_obj_set_height(row, LV_SIZE_CONTENT);
     lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
@@ -239,5 +244,7 @@ lv_obj_t *App_UiComponent_CreateNavBar(lv_obj_t *parent,
         row,
         App_UiAssets_GetIcon(APP_UI_ICON_NAV_HOME),
         &bindings[1]);
+    lv_obj_update_layout(row);
+    lv_obj_align(row, LV_ALIGN_BOTTOM_MID, 0, 0);
     return row;
 }

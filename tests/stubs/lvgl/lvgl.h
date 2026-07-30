@@ -78,6 +78,7 @@ typedef struct {
 #define LV_OBJ_FLAG_CLICKABLE 0x0100
 #define LV_OBJ_FLAG_HIDDEN 0x0200
 #define LV_OBJ_FLAG_SCROLLABLE 0x0400
+#define LV_OBJ_FLAG_FLOATING 0x0800
 
 #define LV_PART_INDICATOR 0x010000
 #define LV_PART_KNOB 0x020000
@@ -99,6 +100,7 @@ typedef struct {
 #define LV_FLEX_ALIGN_CENTER 0
 #define LV_FLEX_ALIGN_SPACE_BETWEEN 1
 #define LV_FLEX_ALIGN_START 2
+#define LV_ALIGN_BOTTOM_MID 0
 
 #define LV_SIZE_CONTENT (-1)
 #define LV_PCT(value) (value)
@@ -121,8 +123,15 @@ void lv_obj_clean(lv_obj_t *object);
 void lv_obj_remove_style_all(lv_obj_t *object);
 void lv_obj_set_size(lv_obj_t *object, int32_t width, int32_t height);
 void lv_obj_set_width(lv_obj_t *object, int32_t width);
+int32_t lv_obj_get_width(const lv_obj_t *object);
+int32_t lv_obj_get_height(const lv_obj_t *object);
+void lv_obj_update_layout(const lv_obj_t *object);
 void lv_obj_set_height(lv_obj_t *object, int32_t height);
 void lv_obj_set_x(lv_obj_t *object, int32_t x);
+void lv_obj_align(lv_obj_t *object,
+                  int32_t alignment,
+                  int32_t x_offset,
+                  int32_t y_offset);
 void lv_obj_set_flex_flow(lv_obj_t *object, int32_t flow);
 void lv_obj_set_flex_align(lv_obj_t *object,
                            int32_t main_place,

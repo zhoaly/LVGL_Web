@@ -15,6 +15,7 @@ static unsigned int s_transition_init_count;
 static uint32_t s_duration;
 static uint32_t s_reverse_duration;
 static uint32_t s_repeat_count;
+static int32_t s_start_value;
 static int32_t s_end_value;
 static lv_anim_exec_xcb_t s_exec_cb;
 static lv_obj_t *s_variable;
@@ -25,6 +26,7 @@ static void reset_animation_probe(void)
     s_duration = 0u;
     s_reverse_duration = 0u;
     s_repeat_count = 0u;
+    s_start_value = 0;
     s_end_value = 0;
     s_exec_cb = NULL;
     s_variable = NULL;
@@ -131,7 +133,7 @@ void lv_anim_set_values(
     lv_anim_t *animation, int32_t start, int32_t end)
 {
     (void)animation;
-    (void)start;
+    s_start_value = start;
     s_end_value = end;
 }
 
@@ -242,6 +244,16 @@ int main(void)
         NULL));
     assert(s_anim_start_count == 1u);
     assert(s_duration == 180u);
+    assert(s_end_value == 0);
+    assert(s_variable == &object);
+    assert(s_exec_cb != NULL);
+
+    reset_animation_probe();
+    App_UiMotion_AnimateEnter(
+        &object, APP_UI_MOTION_OPACITY_NONE, 56, 0);
+    assert(s_anim_start_count == 1u);
+    assert(s_duration == 140u);
+    assert(s_start_value == 56);
     assert(s_end_value == 0);
     assert(s_variable == &object);
     assert(s_exec_cb != NULL);

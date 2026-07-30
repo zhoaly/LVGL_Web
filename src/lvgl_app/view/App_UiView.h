@@ -33,6 +33,9 @@ typedef struct {
     lv_obj_t *active_page_host;
     lv_obj_t *outgoing_page_host;
     bool transitioning;
+    app_ui_page_transition_t pending_transition;
+    bool nav_enter_pending;
+    int32_t nav_enter_offset;
 } app_ui_view_t;
 
 /**
