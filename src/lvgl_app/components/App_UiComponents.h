@@ -24,6 +24,20 @@ typedef struct {
     app_action_request_t request;  /**< 点击时要提交的 Action 请求 */
 } app_ui_action_binding_t;
 
+typedef enum {
+    APP_UI_COMPONENT_FOCUS_LIGHT = 0,
+    APP_UI_COMPONENT_FOCUS_DARK,
+} app_ui_component_focus_style_t;
+
+/**
+ * @brief 为按钮应用统一、非蓝色的编码器焦点反馈。
+ *
+ * LIGHT 用于浅色页面上的图标按钮；DARK 用于黑色导航和菜单控件。
+ */
+void App_UiComponent_ApplyFocusStyle(
+    lv_obj_t *object,
+    app_ui_component_focus_style_t style);
+
 /**
  * @brief 初始化 Action 绑定
  * @param binding 绑定结构体指针

@@ -9,6 +9,7 @@
 
 #include "../../assets/App_UiAssets.h"
 #include "../../assets/App_UiTheme.h"
+#include "../App_UiComponents.h"
 
 enum {
     STATUS_BAR_HEIGHT = 32,
@@ -92,12 +93,8 @@ static lv_obj_t *create_status_button(
         App_UiTheme_GetColor(APP_UI_THEME_COLOR_SURFACE_MUTED),
         LV_STATE_PRESSED);
     lv_obj_set_style_bg_opa(button, LV_OPA_COVER, LV_STATE_PRESSED);
-    lv_obj_set_style_outline_width(button, 2, LV_STATE_FOCUSED);
-    lv_obj_set_style_outline_color(
-        button,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_ACCENT),
-        LV_STATE_FOCUSED);
-    lv_obj_set_style_outline_pad(button, 1, LV_STATE_FOCUSED);
+    App_UiComponent_ApplyFocusStyle(
+        button, APP_UI_COMPONENT_FOCUS_LIGHT);
     lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(button, click_cb, LV_EVENT_CLICKED, status_bar);
 
@@ -167,21 +164,15 @@ lv_obj_t *App_UiStatusBar_Create(
     lv_obj_set_style_radius(status_bar->menu_button, 11, 0);
     lv_obj_set_style_bg_color(
         status_bar->menu_button,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_NAV_BACKGROUND),
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_CONTROL_BACKGROUND),
         0);
     lv_obj_set_style_bg_opa(status_bar->menu_button, LV_OPA_COVER, 0);
     lv_obj_set_style_bg_color(
         status_bar->menu_button,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_ACCENT),
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_CONTROL_PRESSED),
         LV_STATE_PRESSED);
-    lv_obj_set_style_outline_width(
-        status_bar->menu_button, 2, LV_STATE_FOCUSED);
-    lv_obj_set_style_outline_color(
-        status_bar->menu_button,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_ACCENT),
-        LV_STATE_FOCUSED);
-    lv_obj_set_style_outline_pad(
-        status_bar->menu_button, 1, LV_STATE_FOCUSED);
+    App_UiComponent_ApplyFocusStyle(
+        status_bar->menu_button, APP_UI_COMPONENT_FOCUS_DARK);
     lv_obj_add_flag(status_bar->menu_button, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(status_bar->menu_button, menu_click_cb,
                         LV_EVENT_CLICKED, status_bar);
@@ -190,7 +181,7 @@ lv_obj_t *App_UiStatusBar_Create(
         status_bar->menu_button, APP_UI_ICON_STATUS_MENU);
     lv_obj_set_style_image_recolor(
         menu_icon,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_NAV_FOREGROUND),
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_CONTROL_FOREGROUND),
         0);
 
     center_slot = create_slot(status_bar->root, 0);

@@ -11,6 +11,9 @@
   child. It uses a black-and-white image-based icon style.
 - UI code uses `App_UiAssets` for resource lookup and `App_UiTheme` for
   semantic colors/fonts.
+- Runtime data sources publish typed `app_ui_event_t` values through
+  `App_UiPostEvent()`. They never mutate the Model or LVGL object tree
+  directly; Model dirty masks drive page refreshes.
 
 ## Component architecture
 
@@ -29,6 +32,19 @@
   `components/status_bar/App_UiStatusBar.{c,h}`. It owns menu, time, weather,
   Wi-Fi and Bluetooth presentation, while the Home page supplies their current
   state.
+- The Home menu is implemented by
+  `components/menu_drawer/App_UiMenuDrawer.{c,h}`. It is a Home-owned overlay
+  created on `lv_layer_top()` and must be destroyed when the Home page root is
+  deleted.
+- Menu destinations use the normal `APP_ACTION_ID_UI_NAV_PUSH` path. Network,
+  HID Hub and Settings are registered pages; non-Home pages use the persistent
+  bottom Back/Home navigation bar.
+- Interactive components use `App_UiComponent_ApplyFocusStyle()` for consistent
+  light- or dark-surface focus feedback. Keep focus visible for encoder input,
+  but avoid hard-coded blue outlines.
+- Web-only mock controls and Emscripten bridges live outside `src/lvgl_app/`.
+  They must feed the same typed event path used by future ESP32 services and
+  must not be added to the ESP-IDF component source list.
 
 ## Asset workflow
 
@@ -54,6 +70,18 @@
 - Web and ESP-IDF source lists are both explicit. If a new non-aggregated
   generated C file is introduced, update both the root `CMakeLists.txt` and
   `src/lvgl_app/CMakeLists.txt`.
+- The standalone Web artifact keeps its built-in Mock Data panel. When it is
+  embedded by the remote preview service, it declares `device` preview mode,
+  hides that internal panel, and exposes Mock controls through the
+  same-origin `zlyhub.lvgl.mock.v1` `postMessage` bridge.
+- New Web artifacts expose `zlyhub.lvgl.preview.v1`; its `ready` signal is
+  sent only after `App_UiStart()` succeeds and declares Mock/encoder
+  capabilities. The remote preview must use it for accurate loading state
+  while retaining iframe-load fallback for legacy artifacts.
+- The remote preview page uses two independently stacked columns:
+  Preview/Encoder and Mock Data/Actions. Mock and encoder cards show skeleton
+  states until their bridges are ready, and either capability may be absent
+  without disabling the other.
 - Local unit tests:
   `cmake --build build_tests_mingw` followed by
   `ctest --test-dir build_tests_mingw --output-on-failure`.

@@ -51,18 +51,28 @@ add_executable(index
     src/lvgl_app/navigation/App_UiNav.c
     src/lvgl_app/view/App_UiView.c
     src/lvgl_app/components/App_UiComponents.c
+    src/lvgl_app/components/menu_drawer/App_UiMenuDrawer.c
     src/lvgl_app/components/status_bar/App_UiStatusBar.c
     src/lvgl_app/assets/App_UiAssets.c
     src/lvgl_app/assets/App_UiTheme.c
     src/lvgl_app/assets/generated/App_UiIcons.c
     src/lvgl_app/pages/registry/App_UiPages.c
     src/lvgl_app/pages/home/App_UiPageHome.c
+    src/lvgl_app/pages/hid_hub/App_UiPageHidHub.c
+    src/lvgl_app/pages/network/App_UiPageNetwork.c
+    src/lvgl_app/pages/settings/App_UiPageSettings.c
     src/lvgl_app/pages/text/App_UiPageText.c
 )
 
 if(EMSCRIPTEN)
     target_sources(index PRIVATE
         src/lvgl_app/port/pc/App_UiPort_Pc.c
+        src/simulator/App_UiMockBridge.c
+    )
+    target_link_options(index PRIVATE
+        "SHELL:--shell-file ${CMAKE_CURRENT_SOURCE_DIR}/web/lvgl_shell.html"
+        "SHELL:--post-js ${CMAKE_CURRENT_SOURCE_DIR}/web/preview_bridge.js"
+        "SHELL:--post-js ${CMAKE_CURRENT_SOURCE_DIR}/web/mock_controls.js"
     )
 else()
     target_sources(index PRIVATE

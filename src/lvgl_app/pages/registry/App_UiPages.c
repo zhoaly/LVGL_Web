@@ -1,34 +1,35 @@
 /**
  * @file App_UiPages.c
- * @brief 页面注册中心 —— 维护所有页面的映射表，提供按 ID 查找功能。
- *
- * 【设计说明】
- * 此文件维护一个页面描述符数组，所有页面在此注册。
- * 导航系统通过 App_UiPages_Get() 根据页面 ID 查找对应的页面描述符。
- * 新增页面时在 pages[] 数组中添加即可。
+ * @brief 页面注册中心。
  */
 
 #include "App_UiPages.h"
 
 #include <stddef.h>
 
+#include "../hid_hub/App_UiPageHidHub.h"
 #include "../home/App_UiPageHome.h"
+#include "../network/App_UiPageNetwork.h"
+#include "../settings/App_UiPageSettings.h"
 #include "../text/App_UiPageText.h"
 
 const app_ui_page_t *App_UiPages_Get(app_ui_page_id_t page_id)
 {
-    /* 所有已注册页面的描述符数组 */
     const app_ui_page_t *pages[] = {
-        App_UiPageHome_Get(),  /* 首页（APP_UI_PAGE_HOME） */
-        App_UiPageText_Get(),  /* 纯文字页面（APP_UI_PAGE_TEXT） */
+        App_UiPageHome_Get(),
+        App_UiPageText_Get(),
+        App_UiPageNetwork_Get(),
+        App_UiPageHidHub_Get(),
+        App_UiPageSettings_Get(),
     };
-    uint32_t i;
+    uint32_t index;
 
-    /* 遍历查找匹配的页面 ID */
-    for(i = 0; i < (uint32_t)(sizeof(pages) / sizeof(pages[0])); i++) {
-        if(pages[i] != NULL && pages[i]->id == page_id) {
-            return pages[i];
+    for(index = 0u;
+        index < (uint32_t)(sizeof(pages) / sizeof(pages[0]));
+        index++) {
+        if(pages[index] != NULL && pages[index]->id == page_id) {
+            return pages[index];
         }
     }
-    return NULL; /* 未找到对应页面 */
+    return NULL;
 }

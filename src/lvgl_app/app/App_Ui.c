@@ -320,7 +320,7 @@ bool App_UiPostEvent(const app_ui_event_t *event)
 
     /* 参数校验 */
     if(!s_ui.ready || event == NULL || event->type <= APP_UI_EVENT_NONE ||
-       event->type > APP_UI_EVENT_SHOW_MESSAGE) {
+       event->type >= APP_UI_EVENT_COUNT) {
         return false;
     }
 

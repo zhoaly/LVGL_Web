@@ -23,6 +23,7 @@ typedef struct {
     app_ui_page_id_t current_page;  /**< 当前显示的页面 ID */
     uint32_t dirty_mask;            /**< 脏标志位：标记哪些域发生了变更 */
     char message[48];               /**< 系统消息/提示文本 */
+    app_ui_status_state_t status;   /**< 顶部状态栏使用的平台无关状态 */
 } app_ui_model_t;
 
 /**

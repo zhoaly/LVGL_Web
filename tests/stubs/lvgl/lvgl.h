@@ -12,6 +12,12 @@
 
 typedef struct _lv_obj_t lv_obj_t;
 typedef struct _lv_event_t lv_event_t;
+typedef struct _lv_timer_t lv_timer_t;
+typedef uint8_t lv_opa_t;
+
+typedef struct _lv_anim_t {
+    uint32_t placeholder;
+} lv_anim_t;
 
 typedef struct {
     uint32_t value;
@@ -31,6 +37,7 @@ typedef enum {
     LV_EVENT_PRESS_LOST,
     LV_EVENT_RELEASED,
     LV_EVENT_CLICKED,
+    LV_EVENT_DELETE,
 } lv_event_code_t;
 
 typedef struct {
@@ -74,9 +81,14 @@ typedef struct {
 #define LV_PCT(value) (value)
 
 typedef void (*lv_event_cb_t)(lv_event_t *event);
+typedef void (*lv_timer_cb_t)(lv_timer_t *timer);
+typedef void (*lv_anim_exec_xcb_t)(void *variable, int32_t value);
+typedef int32_t (*lv_anim_path_cb_t)(const lv_anim_t *animation);
+typedef void (*lv_anim_completed_cb_t)(lv_anim_t *animation);
 
 lv_color_t lv_color_hex(uint32_t value);
 lv_obj_t *lv_screen_active(void);
+lv_obj_t *lv_layer_top(void);
 lv_obj_t *lv_obj_create(lv_obj_t *parent);
 lv_obj_t *lv_button_create(lv_obj_t *parent);
 lv_obj_t *lv_label_create(lv_obj_t *parent);
@@ -87,6 +99,7 @@ void lv_obj_remove_style_all(lv_obj_t *object);
 void lv_obj_set_size(lv_obj_t *object, int32_t width, int32_t height);
 void lv_obj_set_width(lv_obj_t *object, int32_t width);
 void lv_obj_set_height(lv_obj_t *object, int32_t height);
+void lv_obj_set_x(lv_obj_t *object, int32_t x);
 void lv_obj_set_flex_flow(lv_obj_t *object, int32_t flow);
 void lv_obj_set_flex_align(lv_obj_t *object,
                            int32_t main_place,
@@ -121,6 +134,7 @@ void lv_obj_set_style_pad_row(lv_obj_t *object, int32_t value, int32_t selector)
 void lv_obj_set_style_pad_ver(lv_obj_t *object, int32_t value, int32_t selector);
 void lv_obj_set_style_radius(lv_obj_t *object, int32_t value, int32_t selector);
 void lv_obj_set_style_shadow_color(lv_obj_t *object, lv_color_t value, int32_t selector);
+void lv_obj_set_style_shadow_offset_x(lv_obj_t *object, int32_t value, int32_t selector);
 void lv_obj_set_style_shadow_offset_y(lv_obj_t *object, int32_t value, int32_t selector);
 void lv_obj_set_style_shadow_opa(lv_obj_t *object, int32_t value, int32_t selector);
 void lv_obj_set_style_shadow_width(lv_obj_t *object, int32_t value, int32_t selector);
@@ -128,5 +142,23 @@ void lv_obj_set_style_text_color(lv_obj_t *object, lv_color_t value, int32_t sel
 void lv_obj_set_style_text_font(lv_obj_t *object,
                                 const lv_font_t *value,
                                 int32_t selector);
+
+void lv_anim_init(lv_anim_t *animation);
+void lv_anim_set_var(lv_anim_t *animation, void *variable);
+void lv_anim_set_exec_cb(lv_anim_t *animation, lv_anim_exec_xcb_t callback);
+void lv_anim_set_values(lv_anim_t *animation, int32_t start, int32_t end);
+void lv_anim_set_duration(lv_anim_t *animation, uint32_t duration);
+void lv_anim_set_path_cb(lv_anim_t *animation, lv_anim_path_cb_t callback);
+void lv_anim_set_user_data(lv_anim_t *animation, void *user_data);
+void lv_anim_set_completed_cb(lv_anim_t *animation,
+                              lv_anim_completed_cb_t callback);
+lv_anim_t *lv_anim_start(lv_anim_t *animation);
+uint32_t lv_anim_delete(void *variable, lv_anim_exec_xcb_t callback);
+void *lv_anim_get_user_data(lv_anim_t *animation);
+int32_t lv_anim_path_ease_out(const lv_anim_t *animation);
+lv_timer_t *lv_timer_create(
+    lv_timer_cb_t callback,
+    uint32_t period,
+    void *user_data);
 
 #endif /* TEST_STUB_LVGL_H */

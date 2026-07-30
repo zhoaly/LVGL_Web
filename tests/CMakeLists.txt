@@ -25,6 +25,18 @@ target_include_directories(test_ui_model PRIVATE
 )
 add_test(NAME ui_model COMMAND test_ui_model)
 
+add_executable(test_ui_event_queue
+    test_ui_event_queue.c
+    ../src/lvgl_app/app/App_Ui.c
+    ../src/lvgl_app/model/App_UiModel.c
+    ../src/lvgl_app/navigation/App_UiNav.c
+)
+target_include_directories(test_ui_event_queue PRIVATE
+    stubs
+    ../src
+)
+add_test(NAME ui_event_queue COMMAND test_ui_event_queue)
+
 add_executable(test_ui_navigation
     test_ui_navigation.c
     ../src/lvgl_app/navigation/App_UiNav.c
@@ -43,6 +55,9 @@ target_include_directories(test_ui_pages PRIVATE
     ../src/lvgl_app/app
     ../src/lvgl_app/model
     ../src/lvgl_app/pages/home
+    ../src/lvgl_app/pages/hid_hub
+    ../src/lvgl_app/pages/network
+    ../src/lvgl_app/pages/settings
     ../src/lvgl_app/pages/text
     ../src/lvgl_app/pages/registry
 )
@@ -56,9 +71,13 @@ add_library(test_ui_compile OBJECT
     ../src/lvgl_app/assets/App_UiAssets.c
     ../src/lvgl_app/assets/App_UiTheme.c
     ../src/lvgl_app/components/App_UiComponents.c
+    ../src/lvgl_app/components/menu_drawer/App_UiMenuDrawer.c
     ../src/lvgl_app/components/status_bar/App_UiStatusBar.c
     ../src/lvgl_app/view/App_UiView.c
     ../src/lvgl_app/pages/home/App_UiPageHome.c
+    ../src/lvgl_app/pages/hid_hub/App_UiPageHidHub.c
+    ../src/lvgl_app/pages/network/App_UiPageNetwork.c
+    ../src/lvgl_app/pages/settings/App_UiPageSettings.c
     ../src/lvgl_app/pages/text/App_UiPageText.c
 )
 target_include_directories(test_ui_compile PRIVATE
@@ -80,5 +99,21 @@ if(Python3_Interpreter_FOUND)
     set_tests_properties(
         ui_assets_current
         PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..
+    )
+endif()
+
+find_program(NODE_EXECUTABLE node)
+if(NODE_EXECUTABLE)
+    add_test(
+        NAME preview_bridge
+        COMMAND ${NODE_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/test_preview_bridge.js
+                ${CMAKE_CURRENT_SOURCE_DIR}/../web/preview_bridge.js
+    )
+    add_test(
+        NAME mock_controls
+        COMMAND ${NODE_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/test_mock_controls.js
+                ${CMAKE_CURRENT_SOURCE_DIR}/../web/mock_controls.js
     )
 endif()

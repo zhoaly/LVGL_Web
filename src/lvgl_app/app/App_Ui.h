@@ -30,6 +30,10 @@ typedef enum {
     APP_UI_PAGE_NONE = 0,  /**< 无效页面，用于初始化和错误状态 */
     APP_UI_PAGE_HOME,      /**< 首页 */
     APP_UI_PAGE_TEXT,      /**< 纯文字页面 */
+    APP_UI_PAGE_NETWORK,
+    APP_UI_PAGE_HID_HUB,
+    APP_UI_PAGE_SETTINGS,
+    APP_UI_PAGE_COUNT,
 } app_ui_page_id_t;
 
 /**
@@ -39,15 +43,53 @@ typedef enum {
     APP_UI_DIRTY_NONE = 0,             /**< 无变更 */
     APP_UI_DIRTY_SYSTEM = (1u << 0),   /**< 系统消息变更 */
     APP_UI_DIRTY_NAV = (1u << 1),      /**< 导航变更（页面切换） */
+    APP_UI_DIRTY_STATUS = (1u << 2),   /**< 时间、天气和无线连接状态变更 */
     APP_UI_DIRTY_ALL = 0xFFFFFFFFu,    /**< 全量刷新标志 */
 } app_ui_dirty_mask_t;
+
+typedef enum {
+    APP_UI_WIFI_DISCONNECTED = 0,
+    APP_UI_WIFI_CONNECTING,
+    APP_UI_WIFI_CONNECTED,
+    APP_UI_WIFI_STATE_COUNT,
+} app_ui_wifi_state_t;
+
+typedef enum {
+    APP_UI_BLUETOOTH_OFF = 0,
+    APP_UI_BLUETOOTH_ADVERTISING,
+    APP_UI_BLUETOOTH_CONNECTED,
+    APP_UI_BLUETOOTH_STATE_COUNT,
+} app_ui_bluetooth_state_t;
+
+typedef struct {
+    uint8_t hour;
+    uint8_t minute;
+    bool synced;
+} app_ui_time_state_t;
+
+typedef struct {
+    int16_t temperature_c;
+    bool available;
+} app_ui_weather_state_t;
+
+typedef struct {
+    app_ui_time_state_t time;
+    app_ui_weather_state_t weather;
+    app_ui_wifi_state_t wifi;
+    app_ui_bluetooth_state_t bluetooth;
+} app_ui_status_state_t;
 
 /**
  * @brief UI 事件类型枚举
  */
 typedef enum {
-    APP_UI_EVENT_NONE = 0,          /**< 空事件 */
-    APP_UI_EVENT_SHOW_MESSAGE,      /**< 显示 Toast 消息 */
+    APP_UI_EVENT_NONE = 0,               /**< 空事件 */
+    APP_UI_EVENT_SHOW_MESSAGE,           /**< 显示 Toast 消息 */
+    APP_UI_EVENT_TIME_UPDATED,           /**< 时间状态更新 */
+    APP_UI_EVENT_WEATHER_UPDATED,        /**< 天气状态更新 */
+    APP_UI_EVENT_WIFI_STATE_CHANGED,     /**< Wi-Fi 状态更新 */
+    APP_UI_EVENT_BLUETOOTH_STATE_CHANGED,/**< 蓝牙状态更新 */
+    APP_UI_EVENT_COUNT,
 } app_ui_event_type_t;
 
 /**
@@ -55,7 +97,13 @@ typedef enum {
  */
 typedef struct {
     app_ui_event_type_t type;  /**< 事件类型 */
-    char text[48];             /**< 消息文本 */
+    char text[48];             /**< SHOW_MESSAGE 消息文本 */
+    union {
+        app_ui_time_state_t time;
+        app_ui_weather_state_t weather;
+        app_ui_wifi_state_t wifi;
+        app_ui_bluetooth_state_t bluetooth;
+    } data;
 } app_ui_event_t;
 
 /* ======================== 顶层 API 函数声明 ======================== */

@@ -150,6 +150,18 @@ EM_JS(void, install_encoder_bridge, (), {
     sendReady();
 });
 
+EM_JS(void, notify_preview_ready, (int width, int height), {
+    if(window.lvglPreviewBridge &&
+       typeof window.lvglPreviewBridge.markReady === "function") {
+        window.lvglPreviewBridge.markReady({
+            width,
+            height,
+            mockData: true,
+            encoder: true
+        });
+    }
+});
+
 /**
  * @brief LVGL 主循环回调
  *
@@ -204,6 +216,7 @@ int main(void)
     }
 
     install_encoder_bridge();
+    notify_preview_ready(LVGL_SIM_WIDTH, LVGL_SIM_HEIGHT);
 
     /*
      * 步骤5：将主循环交给浏览器控制。

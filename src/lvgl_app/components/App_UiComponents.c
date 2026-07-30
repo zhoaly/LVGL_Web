@@ -14,6 +14,51 @@
 #include "../assets/App_UiAssets.h"
 #include "../assets/App_UiTheme.h"
 
+void App_UiComponent_ApplyFocusStyle(
+    lv_obj_t *object,
+    app_ui_component_focus_style_t style)
+{
+    if(object == NULL) {
+        return;
+    }
+
+    /* 内收底座、细边框与柔和阴影替代外扩的蓝色轮廓。 */
+    lv_obj_set_style_outline_width(object, 0, LV_STATE_FOCUSED);
+    lv_obj_set_style_outline_pad(object, 0, LV_STATE_FOCUSED);
+    lv_obj_set_style_border_width(object, 1, LV_STATE_FOCUSED);
+    lv_obj_set_style_shadow_width(object, 8, LV_STATE_FOCUSED);
+    lv_obj_set_style_shadow_color(
+        object,
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_NAV_SHADOW),
+        LV_STATE_FOCUSED);
+    lv_obj_set_style_shadow_opa(object, LV_OPA_20, LV_STATE_FOCUSED);
+    lv_obj_set_style_shadow_offset_y(object, 2, LV_STATE_FOCUSED);
+
+    if(style == APP_UI_COMPONENT_FOCUS_DARK) {
+        lv_obj_set_style_bg_color(
+            object,
+            App_UiTheme_GetColor(APP_UI_THEME_COLOR_CONTROL_PRESSED),
+            LV_STATE_FOCUSED);
+        lv_obj_set_style_bg_opa(object, LV_OPA_COVER, LV_STATE_FOCUSED);
+        lv_obj_set_style_border_color(
+            object,
+            App_UiTheme_GetColor(APP_UI_THEME_COLOR_CONTROL_FOREGROUND),
+            LV_STATE_FOCUSED);
+        lv_obj_set_style_border_opa(object, LV_OPA_40, LV_STATE_FOCUSED);
+    } else {
+        lv_obj_set_style_bg_color(
+            object,
+            App_UiTheme_GetColor(APP_UI_THEME_COLOR_SURFACE_MUTED),
+            LV_STATE_FOCUSED);
+        lv_obj_set_style_bg_opa(object, LV_OPA_COVER, LV_STATE_FOCUSED);
+        lv_obj_set_style_border_color(
+            object,
+            App_UiTheme_GetColor(APP_UI_THEME_COLOR_FOCUS_BORDER),
+            LV_STATE_FOCUSED);
+        lv_obj_set_style_border_opa(object, LV_OPA_40, LV_STATE_FOCUSED);
+    }
+}
+
 /**
  * @brief LVGL 点击事件回调：提交绑定的 Action 请求
  *
@@ -85,12 +130,8 @@ static lv_obj_t *create_nav_icon_button(lv_obj_t *parent,
         App_UiTheme_GetColor(APP_UI_THEME_COLOR_NAV_FOREGROUND),
         0);
     lv_obj_set_style_border_opa(button, LV_OPA_40, 0);
-    lv_obj_set_style_outline_width(button, 2, LV_STATE_FOCUSED);
-    lv_obj_set_style_outline_color(
-        button,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_NAV_FOREGROUND),
-        LV_STATE_FOCUSED);
-    lv_obj_set_style_outline_pad(button, 2, LV_STATE_FOCUSED);
+    App_UiComponent_ApplyFocusStyle(
+        button, APP_UI_COMPONENT_FOCUS_DARK);
 
     icon = lv_image_create(button);
     lv_image_set_src(icon, source);

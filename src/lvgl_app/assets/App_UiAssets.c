@@ -15,6 +15,10 @@ const lv_image_dsc_t *App_UiAssets_GetIcon(app_ui_icon_id_t id)
         [APP_UI_ICON_STATUS_MENU] = &app_ui_icon_status_menu,
         [APP_UI_ICON_STATUS_WIFI] = &app_ui_icon_status_wifi,
         [APP_UI_ICON_STATUS_BLUETOOTH] = &app_ui_icon_status_bluetooth,
+        [APP_UI_ICON_MENU_CLOSE] = &app_ui_icon_menu_close,
+        [APP_UI_ICON_MENU_NETWORK] = &app_ui_icon_menu_network,
+        [APP_UI_ICON_MENU_HID_HUB] = &app_ui_icon_menu_hid_hub,
+        [APP_UI_ICON_MENU_SETTINGS] = &app_ui_icon_menu_settings,
     };
 
     if(id < 0 || id >= APP_UI_ICON_COUNT) {
