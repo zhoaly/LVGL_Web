@@ -7,8 +7,8 @@
 
 #include <string.h>
 
-#include "../../assets/App_UiTheme.h"
-#include "../motion/App_UiMotion.h"
+#include "../../../assets/App_UiTheme.h"
+#include "../../motion/App_UiMotion.h"
 
 enum {
     MENU_DRAWER_WIDTH = 180,

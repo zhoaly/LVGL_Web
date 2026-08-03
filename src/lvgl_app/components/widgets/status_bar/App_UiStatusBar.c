@@ -7,10 +7,10 @@
 
 #include <string.h>
 
-#include "../../assets/App_UiAssets.h"
-#include "../../assets/App_UiTheme.h"
-#include "../App_UiComponents.h"
-#include "../motion/App_UiMotion.h"
+#include "../../../assets/App_UiAssets.h"
+#include "../../../assets/App_UiTheme.h"
+#include "../../App_UiComponents.h"
+#include "../../motion/App_UiMotion.h"
 
 enum {
     STATUS_BAR_HEIGHT = 32,

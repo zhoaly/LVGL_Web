@@ -1,77 +1,50 @@
 /**
  * @file App_UiPageDebug.c
- * @brief Placeholder page for future debug tools.
+ * @brief Debug page with a reusable vertical menu.
  */
 
 #include "App_UiPageDebug.h"
 
 #include "lvgl/lvgl.h"
 
-#include "../../assets/App_UiAssets.h"
-#include "../../assets/App_UiTheme.h"
+#include "../../components/widgets/vertical_menu/App_UiVerticalMenu.h"
+
+enum {
+    DEBUG_NAV_CLEARANCE = 60,
+};
+
+static app_ui_vertical_menu_t s_debug_menu;
+
+static const app_ui_vertical_menu_item_t s_debug_items[] = {
+    {.id = 1u, .label = "Debug Item 1"},
+    {.id = 2u, .label = "Debug Item 2"},
+    {.id = 3u, .label = "Debug Item 3"},
+    {.id = 4u, .label = "Debug Item 4"},
+    {.id = 5u, .label = "Debug Item 5"},
+    {.id = 6u, .label = "Debug Item 6"},
+    {.id = 7u, .label = "Debug Item 7"},
+    {.id = 8u, .label = "Debug Item 8"},
+};
 
 static void build(lv_obj_t *parent, const app_ui_model_t *model)
 {
-    lv_obj_t *description;
-    lv_obj_t *icon;
-    lv_obj_t *icon_box;
-    lv_obj_t *status;
-    lv_obj_t *status_label;
+    lv_obj_t *nav_clearance;
     (void)model;
 
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_CENTER,
+    lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_START,
                           LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_row(parent, 10, 0);
 
-    icon_box = lv_obj_create(parent);
-    lv_obj_remove_style_all(icon_box);
-    lv_obj_set_size(icon_box, 44, 44);
-    lv_obj_set_style_radius(icon_box, 14, 0);
-    lv_obj_set_style_bg_color(
-        icon_box,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_NAV_BACKGROUND),
-        0);
-    lv_obj_set_style_bg_opa(icon_box, LV_OPA_COVER, 0);
+    (void)App_UiVerticalMenu_Create(
+        parent,
+        &s_debug_menu,
+        s_debug_items,
+        sizeof(s_debug_items) / sizeof(s_debug_items[0]),
+        NULL);
 
-    icon = lv_image_create(icon_box);
-    lv_image_set_src(icon, App_UiAssets_GetIcon(APP_UI_ICON_MENU_DEBUG));
-    lv_obj_set_style_image_recolor(
-        icon,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_NAV_FOREGROUND),
-        0);
-    lv_obj_set_style_image_recolor_opa(icon, LV_OPA_COVER, 0);
-    lv_obj_center(icon);
-
-    description = lv_label_create(parent);
-    lv_label_set_text(description, "Debug tools");
-    lv_obj_set_style_text_font(
-        description, App_UiTheme_GetFont(APP_UI_THEME_FONT_BODY), 0);
-    lv_obj_set_style_text_color(
-        description,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_PRIMARY),
-        0);
-
-    status = lv_obj_create(parent);
-    lv_obj_remove_style_all(status);
-    lv_obj_set_size(status, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_set_style_radius(status, 10, 0);
-    lv_obj_set_style_bg_color(
-        status,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_SURFACE_MUTED),
-        0);
-    lv_obj_set_style_bg_opa(status, LV_OPA_COVER, 0);
-    lv_obj_set_style_pad_hor(status, 10, 0);
-    lv_obj_set_style_pad_ver(status, 5, 0);
-
-    status_label = lv_label_create(status);
-    lv_label_set_text(status_label, "Coming soon");
-    lv_obj_set_style_text_font(
-        status_label, App_UiTheme_GetFont(APP_UI_THEME_FONT_BODY), 0);
-    lv_obj_set_style_text_color(
-        status_label,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_MUTED),
-        0);
+    nav_clearance = lv_obj_create(parent);
+    lv_obj_remove_style_all(nav_clearance);
+    lv_obj_set_size(nav_clearance, LV_PCT(100), DEBUG_NAV_CLEARANCE);
 }
 
 static void refresh(const app_ui_model_t *model)

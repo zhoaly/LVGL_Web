@@ -11,9 +11,9 @@
 
 #include "../../assets/App_UiTheme.h"
 #include "../../components/App_UiComponents.h"
-#include "../../components/menu_drawer/App_UiMenuDrawer.h"
+#include "../../components/widgets/menu_drawer/App_UiMenuDrawer.h"
 #include "../../components/motion/App_UiMotion.h"
-#include "../../components/status_bar/App_UiStatusBar.h"
+#include "../../components/widgets/status_bar/App_UiStatusBar.h"
 
 static app_ui_action_binding_t s_text_page_binding;
 static app_ui_status_bar_t s_status_bar;

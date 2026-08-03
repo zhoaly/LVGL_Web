@@ -15,6 +15,7 @@ typedef struct _lv_event_t lv_event_t;
 typedef struct _lv_timer_t lv_timer_t;
 typedef uint8_t lv_opa_t;
 typedef int32_t lv_style_prop_t;
+typedef int32_t lv_anim_enable_t;
 
 typedef struct {
     uint32_t placeholder;
@@ -42,6 +43,7 @@ typedef enum {
     LV_EVENT_PRESS_LOST,
     LV_EVENT_RELEASED,
     LV_EVENT_CLICKED,
+    LV_EVENT_FOCUSED,
     LV_EVENT_DELETE,
 } lv_event_code_t;
 
@@ -82,6 +84,7 @@ typedef struct {
 
 #define LV_PART_INDICATOR 0x010000
 #define LV_PART_KNOB 0x020000
+#define LV_PART_SCROLLBAR 0x040000
 
 #define LV_STYLE_TRANSFORM_WIDTH 1
 #define LV_STYLE_TRANSFORM_HEIGHT 2
@@ -94,6 +97,11 @@ typedef struct {
 #define LV_STYLE_SHADOW_OFFSET_Y 9
 
 #define LV_ANIM_REPEAT_INFINITE UINT32_MAX
+#define LV_ANIM_OFF 0
+#define LV_ANIM_ON 1
+
+#define LV_DIR_VER 0x03
+#define LV_SCROLLBAR_MODE_AUTO 3
 
 #define LV_FLEX_FLOW_ROW 0
 #define LV_FLEX_FLOW_COLUMN 1
@@ -146,6 +154,7 @@ void lv_obj_add_event_cb(lv_obj_t *object,
                          lv_event_code_t filter,
                          void *user_data);
 void *lv_event_get_user_data(lv_event_t *event);
+lv_obj_t *lv_event_get_target(lv_event_t *event);
 lv_event_code_t lv_event_get_code(lv_event_t *event);
 void lv_label_set_text(lv_obj_t *label, const char *text);
 void lv_image_set_src(lv_obj_t *image, const void *source);
@@ -155,6 +164,7 @@ void lv_obj_set_style_bg_opa(lv_obj_t *object, int32_t value, int32_t selector);
 void lv_obj_set_style_border_color(lv_obj_t *object, lv_color_t value, int32_t selector);
 void lv_obj_set_style_border_opa(lv_obj_t *object, int32_t value, int32_t selector);
 void lv_obj_set_style_border_width(lv_obj_t *object, int32_t value, int32_t selector);
+void lv_obj_set_style_width(lv_obj_t *object, int32_t value, int32_t selector);
 void lv_obj_set_style_image_recolor(lv_obj_t *object, lv_color_t value, int32_t selector);
 void lv_obj_set_style_image_recolor_opa(lv_obj_t *object, int32_t value, int32_t selector);
 void lv_obj_set_style_outline_color(lv_obj_t *object, lv_color_t value, int32_t selector);
@@ -200,6 +210,14 @@ void lv_style_transition_dsc_init(
     uint32_t duration,
     uint32_t delay,
     void *user_data);
+
+void lv_obj_set_scroll_dir(lv_obj_t *object, int32_t direction);
+void lv_obj_set_scrollbar_mode(lv_obj_t *object, int32_t mode);
+void lv_obj_scroll_to_view(lv_obj_t *object, lv_anim_enable_t animation);
+void lv_obj_scroll_to_y(
+    lv_obj_t *object,
+    int32_t y,
+    lv_anim_enable_t animation);
 
 void lv_anim_init(lv_anim_t *animation);
 void lv_anim_set_var(lv_anim_t *animation, void *variable);

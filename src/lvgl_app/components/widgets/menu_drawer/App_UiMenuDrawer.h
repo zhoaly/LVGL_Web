@@ -11,9 +11,9 @@
 
 #include "lvgl/lvgl.h"
 
-#include "../../app/App_Ui.h"
-#include "../../assets/App_UiAssets.h"
-#include "../App_UiComponents.h"
+#include "../../../app/App_Ui.h"
+#include "../../../assets/App_UiAssets.h"
+#include "../../App_UiComponents.h"
 
 #define APP_UI_MENU_DRAWER_MAX_ITEMS 6u
 

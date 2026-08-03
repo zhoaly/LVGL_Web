@@ -22,7 +22,9 @@ src/lvgl_app/
 ├── model/               UI 状态与 dirty 标志
 ├── navigation/          页面栈和导航操作
 ├── view/                屏幕容器、页面渲染和 Toast
-├── components/          可复用控件和 Action 绑定
+├── components/          可复用控件、Motion 和 Action/Focus 辅助
+│   ├── motion/          共享动效令牌和动画辅助
+│   └── widgets/         跨页面复用的独立视觉组件
 ├── pages/
 │   ├── registry/        页面描述符和页面注册表
 │   ├── home/            首页
@@ -66,8 +68,11 @@ python tools/assets/build_assets.py --check
 
 ## 新增通用组件
 
-每类独立组件放入 `components/` 下自己的源文件和头文件。交互控件统一通过
-`App_UiComponent_BindAction()` 提交 Action，避免页面直接调用导航模块。
+独立视觉组件放入 `components/widgets/<component_name>/`，每个组件拥有自己的
+公开头文件和实现文件。共享 Motion、Action 和焦点辅助继续放在 `components/`
+下。组件通过回调或 `App_UiComponent_BindAction()` 暴露交互，页面负责组合组件，
+不应直接访问组件内部对象树。完整约定见
+[`components/widgets/README.md`](src/lvgl_app/components/widgets/README.md)。
 
 ## 单元测试
 

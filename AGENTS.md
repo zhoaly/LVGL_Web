@@ -20,8 +20,9 @@
 ## Component architecture
 
 - Reusable visual components live in their own
-  `src/lvgl_app/components/<component_name>/` directory with a public header
-  and implementation file.
+  `src/lvgl_app/components/widgets/<component_name>/` directory with a public
+  header and implementation file. Shared component infrastructure such as
+  Motion and Action/focus helpers remains directly under `components/`.
 - A stateful component exposes an instance context plus `Create` and `Update`
   APIs. Pages own the instance and compose components; they do not reach into
   a component's internal object tree.
@@ -31,16 +32,19 @@
 - Component interactions are exposed through callbacks or the shared Action
   layer so the component remains reusable by different pages.
 - The Home top bar is implemented by
-  `components/status_bar/App_UiStatusBar.{c,h}`. It owns menu, time, weather,
-  Wi-Fi and Bluetooth presentation, while the Home page supplies their current
-  state.
+  `components/widgets/status_bar/App_UiStatusBar.{c,h}`. It owns menu, time,
+  weather, Wi-Fi and Bluetooth presentation, while the Home page supplies
+  their current state.
 - The Home menu is implemented by
-  `components/menu_drawer/App_UiMenuDrawer.{c,h}`. It is a Home-owned overlay
-  created on `lv_layer_top()` and must be destroyed when the Home page root is
-  deleted.
+  `components/widgets/menu_drawer/App_UiMenuDrawer.{c,h}`. It is a Home-owned
+  overlay created on `lv_layer_top()` and must be destroyed when the Home page
+  root is deleted.
+- Reusable vertical menus are implemented by
+  `components/widgets/vertical_menu/App_UiVerticalMenu.{c,h}`. They expose
+  item IDs and callbacks without owning page-specific behavior.
 - Menu destinations use the normal `APP_ACTION_ID_UI_NAV_PUSH` path. Network,
-  HID Hub and Settings are registered pages; non-Home pages use the persistent
-  bottom Back/Home navigation bar.
+  HID Hub, Settings and Debug are registered pages; non-Home pages use the
+  persistent bottom Back/Home navigation bar.
 - Interactive components use `App_UiComponent_ApplyFocusStyle()` for consistent
   light- or dark-surface focus feedback. Keep focus visible for encoder input,
   but avoid hard-coded blue outlines.
