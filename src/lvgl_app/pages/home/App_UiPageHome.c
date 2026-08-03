@@ -37,6 +37,11 @@ static const app_ui_menu_drawer_item_t s_menu_items[] = {
         .label = "Settings",
         .target_page = APP_UI_PAGE_SETTINGS,
     },
+    {
+        .icon_id = APP_UI_ICON_MENU_DEBUG,
+        .label = "Debug",
+        .target_page = APP_UI_PAGE_DEBUG,
+    },
 };
 
 static app_ui_status_wifi_state_t map_wifi_state(app_ui_wifi_state_t state)

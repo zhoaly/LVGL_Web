@@ -18,6 +18,7 @@ typedef enum {
     APP_UI_ICON_MENU_NETWORK,
     APP_UI_ICON_MENU_HID_HUB,
     APP_UI_ICON_MENU_SETTINGS,
+    APP_UI_ICON_MENU_DEBUG,
     APP_UI_ICON_COUNT,
 } app_ui_icon_id_t;
 

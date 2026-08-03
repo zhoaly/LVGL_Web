@@ -14,6 +14,7 @@ idf_component_register(
         "assets/App_UiTheme.c"
         "assets/generated/App_UiIcons.c"
         "pages/registry/App_UiPages.c"
+        "pages/debug/App_UiPageDebug.c"
         "pages/home/App_UiPageHome.c"
         "pages/hid_hub/App_UiPageHidHub.c"
         "pages/network/App_UiPageNetwork.c"

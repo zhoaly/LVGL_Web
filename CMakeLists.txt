@@ -58,6 +58,7 @@ add_executable(index
     src/lvgl_app/assets/App_UiTheme.c
     src/lvgl_app/assets/generated/App_UiIcons.c
     src/lvgl_app/pages/registry/App_UiPages.c
+    src/lvgl_app/pages/debug/App_UiPageDebug.c
     src/lvgl_app/pages/home/App_UiPageHome.c
     src/lvgl_app/pages/hid_hub/App_UiPageHidHub.c
     src/lvgl_app/pages/network/App_UiPageNetwork.c

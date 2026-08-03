@@ -70,6 +70,7 @@ add_executable(test_ui_pages
 target_include_directories(test_ui_pages PRIVATE
     ../src/lvgl_app/app
     ../src/lvgl_app/model
+    ../src/lvgl_app/pages/debug
     ../src/lvgl_app/pages/home
     ../src/lvgl_app/pages/hid_hub
     ../src/lvgl_app/pages/network
@@ -91,6 +92,7 @@ add_library(test_ui_compile OBJECT
     ../src/lvgl_app/components/motion/App_UiMotion.c
     ../src/lvgl_app/components/status_bar/App_UiStatusBar.c
     ../src/lvgl_app/view/App_UiView.c
+    ../src/lvgl_app/pages/debug/App_UiPageDebug.c
     ../src/lvgl_app/pages/home/App_UiPageHome.c
     ../src/lvgl_app/pages/hid_hub/App_UiPageHidHub.c
     ../src/lvgl_app/pages/network/App_UiPageNetwork.c

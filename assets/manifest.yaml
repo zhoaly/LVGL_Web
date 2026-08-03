@@ -72,6 +72,14 @@
       "width": 18,
       "height": 18,
       "format": "A8"
+    },
+    {
+      "id": "menu_debug",
+      "source": "assets/icons/menu_debug.svg",
+      "symbol": "app_ui_icon_menu_debug",
+      "width": 18,
+      "height": 18,
+      "format": "A8"
     }
   ],
   "images": [],

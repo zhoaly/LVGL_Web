@@ -19,6 +19,7 @@ const lv_image_dsc_t *App_UiAssets_GetIcon(app_ui_icon_id_t id)
         [APP_UI_ICON_MENU_NETWORK] = &app_ui_icon_menu_network,
         [APP_UI_ICON_MENU_HID_HUB] = &app_ui_icon_menu_hid_hub,
         [APP_UI_ICON_MENU_SETTINGS] = &app_ui_icon_menu_settings,
+        [APP_UI_ICON_MENU_DEBUG] = &app_ui_icon_menu_debug,
     };
 
     if(id < 0 || id >= APP_UI_ICON_COUNT) {

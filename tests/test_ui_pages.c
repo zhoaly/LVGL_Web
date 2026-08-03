@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "App_UiPageDebug.h"
 #include "App_UiPageHidHub.h"
 #include "App_UiPageHome.h"
 #include "App_UiPageNetwork.h"
@@ -51,6 +52,15 @@ const app_ui_page_t *App_UiPageSettings_Get(void)
     return &page;
 }
 
+const app_ui_page_t *App_UiPageDebug_Get(void)
+{
+    static const app_ui_page_t page = {
+        .id = APP_UI_PAGE_DEBUG,
+        .title = "Debug",
+    };
+    return &page;
+}
+
 int main(void)
 {
     assert(App_UiPages_Get(APP_UI_PAGE_HOME) == App_UiPageHome_Get());
@@ -58,6 +68,7 @@ int main(void)
     assert(App_UiPages_Get(APP_UI_PAGE_NETWORK) == App_UiPageNetwork_Get());
     assert(App_UiPages_Get(APP_UI_PAGE_HID_HUB) == App_UiPageHidHub_Get());
     assert(App_UiPages_Get(APP_UI_PAGE_SETTINGS) == App_UiPageSettings_Get());
+    assert(App_UiPages_Get(APP_UI_PAGE_DEBUG) == App_UiPageDebug_Get());
     assert(App_UiPages_Get(APP_UI_PAGE_NONE) == NULL);
     assert(App_UiPages_Get(APP_UI_PAGE_COUNT) == NULL);
     return 0;

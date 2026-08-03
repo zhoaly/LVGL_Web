@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "total_bytes": 2916,
+  "total_bytes": 3240,
   "icons": [
     {
       "id": "nav_back",
@@ -78,6 +78,15 @@
       "id": "menu_settings",
       "source": "assets/icons/menu_settings.svg",
       "symbol": "app_ui_icon_menu_settings",
+      "format": "A8",
+      "width": 18,
+      "height": 18,
+      "bytes": 324
+    },
+    {
+      "id": "menu_debug",
+      "source": "assets/icons/menu_debug.svg",
+      "symbol": "app_ui_icon_menu_debug",
       "format": "A8",
       "width": 18,
       "height": 18,

@@ -13,5 +13,6 @@ extern const lv_image_dsc_t app_ui_icon_menu_close;
 extern const lv_image_dsc_t app_ui_icon_menu_network;
 extern const lv_image_dsc_t app_ui_icon_menu_hid_hub;
 extern const lv_image_dsc_t app_ui_icon_menu_settings;
+extern const lv_image_dsc_t app_ui_icon_menu_debug;
 
 #endif /* APP_UI_ICONS_GENERATED_H */
