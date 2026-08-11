@@ -16,6 +16,7 @@ enum {
     ACTION_ROW_SUBTITLE_HEIGHT = 64,
     ACTION_ROW_RADIUS = 10,
     ACTION_ROW_HORIZONTAL_PADDING = 12,
+    ACTION_ROW_VERTICAL_PADDING = 6,
     ACTION_ROW_TEXT_GAP = 2,
     ACTION_ROW_COLUMN_GAP = 8,
     ACTION_ROW_VALUE_WIDTH = 72,
@@ -87,7 +88,26 @@ static lv_obj_t *create_label(
     lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_DOTS);
     lv_obj_set_style_text_font(label, font, 0);
     lv_obj_set_style_text_color(label, color, 0);
+    lv_obj_set_height(label, (int32_t)font->line_height);
     return label;
+}
+
+static int32_t row_height(bool has_subtitle)
+{
+    const lv_font_t *font = App_UiTheme_GetFont(APP_UI_THEME_FONT_BODY);
+    int32_t required_height = (ACTION_ROW_VERTICAL_PADDING * 2) +
+                              (int32_t)font->line_height;
+    const int32_t preferred_height = has_subtitle
+                                         ? ACTION_ROW_SUBTITLE_HEIGHT
+                                         : ACTION_ROW_HEIGHT;
+
+    if(has_subtitle) {
+        required_height += ACTION_ROW_TEXT_GAP +
+                           (int32_t)font->line_height;
+    }
+    return required_height > preferred_height
+               ? required_height
+               : preferred_height;
 }
 
 lv_obj_t *App_UiActionRow_Create(
@@ -131,6 +151,8 @@ lv_obj_t *App_UiActionRow_Create(
         row->root, LV_OPA_COVER, LV_STATE_PRESSED);
     lv_obj_set_style_pad_hor(
         row->root, ACTION_ROW_HORIZONTAL_PADDING, 0);
+    lv_obj_set_style_pad_ver(
+        row->root, ACTION_ROW_VERTICAL_PADDING, 0);
     lv_obj_set_style_pad_column(row->root, ACTION_ROW_COLUMN_GAP, 0);
     lv_obj_set_style_opa(
         row->root, LV_OPA_40, LV_STATE_DISABLED);
@@ -158,7 +180,7 @@ lv_obj_t *App_UiActionRow_Create(
 
     row->title_label = create_label(
         row->text_column,
-        App_UiTheme_GetFont(APP_UI_THEME_FONT_EMPHASIS),
+        App_UiTheme_GetFont(APP_UI_THEME_FONT_BODY),
         App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_PRIMARY));
     row->subtitle_label = create_label(
         row->text_column,
@@ -203,9 +225,7 @@ bool App_UiActionRow_Update(
     set_optional_label(row->value_label, state->value);
     lv_obj_set_height(
         row->root,
-        has_text(state->subtitle)
-            ? ACTION_ROW_SUBTITLE_HEIGHT
-            : ACTION_ROW_HEIGHT);
+        row_height(has_text(state->subtitle)));
     set_enabled(row, state->enabled);
     return true;
 }

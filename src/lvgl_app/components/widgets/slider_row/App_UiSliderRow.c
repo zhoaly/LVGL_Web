@@ -66,6 +66,27 @@ static bool validate_state(
     return true;
 }
 
+static int32_t row_height(bool has_subtitle)
+{
+    const int32_t line_height = (int32_t)App_UiTheme_GetFont(
+        APP_UI_THEME_FONT_BODY)->line_height;
+    const int32_t slider_visual_height = SLIDER_ROW_TRACK_HEIGHT +
+                                         (SLIDER_ROW_KNOB_PADDING * 2);
+    int32_t required_height = (SLIDER_ROW_VERTICAL_PADDING * 2) +
+                              line_height + SLIDER_ROW_GAP +
+                              slider_visual_height;
+    const int32_t preferred_height = has_subtitle
+                                         ? SLIDER_ROW_SUBTITLE_HEIGHT
+                                         : SLIDER_ROW_HEIGHT;
+
+    if(has_subtitle) {
+        required_height += SLIDER_ROW_GAP + line_height;
+    }
+    return required_height > preferred_height
+               ? required_height
+               : preferred_height;
+}
+
 static void set_value_text(app_ui_slider_row_t *row, int32_t value)
 {
     char text[16];
@@ -98,7 +119,7 @@ static void apply_state(
     row->updating = true;
     lv_obj_set_height(
         row->root,
-        show_subtitle ? SLIDER_ROW_SUBTITLE_HEIGHT : SLIDER_ROW_HEIGHT);
+        row_height(show_subtitle));
     lv_label_set_text(row->title_label, state->title);
 
     if(show_subtitle) {
@@ -178,8 +199,11 @@ static void style_label(
     app_ui_theme_font_id_t font,
     app_ui_theme_color_id_t color)
 {
-    lv_obj_set_style_text_font(label, App_UiTheme_GetFont(font), 0);
+    const lv_font_t *resolved_font = App_UiTheme_GetFont(font);
+
+    lv_obj_set_style_text_font(label, resolved_font, 0);
     lv_obj_set_style_text_color(label, App_UiTheme_GetColor(color), 0);
+    lv_obj_set_height(label, (int32_t)resolved_font->line_height);
 }
 
 static bool create_children(app_ui_slider_row_t *row)
@@ -203,7 +227,7 @@ static bool create_children(app_ui_slider_row_t *row)
     lv_obj_set_size(row->title_label, 0, LV_SIZE_CONTENT);
     lv_obj_set_flex_grow(row->title_label, 1);
     lv_label_set_long_mode(row->title_label, LV_LABEL_LONG_MODE_DOTS);
-    style_label(row->title_label, APP_UI_THEME_FONT_EMPHASIS,
+    style_label(row->title_label, APP_UI_THEME_FONT_BODY,
                 APP_UI_THEME_COLOR_TEXT_PRIMARY);
 
     row->value_box = lv_obj_create(row->header);

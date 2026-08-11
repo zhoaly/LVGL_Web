@@ -59,6 +59,8 @@ static void gallery_deleted_cb(lv_event_t *event)
 
 static lv_obj_t *create_section_label(lv_obj_t *parent, const char *text)
 {
+    const lv_font_t *font = App_UiTheme_GetFont(
+        APP_UI_THEME_FONT_EMPHASIS);
     lv_obj_t *label = lv_label_create(parent);
 
     if(label == NULL) {
@@ -66,8 +68,9 @@ static lv_obj_t *create_section_label(lv_obj_t *parent, const char *text)
     }
     lv_label_set_text(label, text);
     lv_obj_set_width(label, LV_PCT(100));
-    lv_obj_set_style_text_font(
-        label, App_UiTheme_GetFont(APP_UI_THEME_FONT_EMPHASIS), 0);
+    lv_obj_set_height(label, (int32_t)font->line_height);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_DOTS);
+    lv_obj_set_style_text_font(label, font, 0);
     lv_obj_set_style_text_color(
         label,
         App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_PRIMARY),
@@ -160,7 +163,7 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
     static const app_ui_toggle_row_state_t wifi_state = {
         .id = GALLERY_TOGGLE_WIFI,
         .title = "Wi-Fi",
-        .subtitle = "Local interactive example",
+        .subtitle = "Interactive local state",
         .checked = true,
         .enabled = true,
     };
@@ -192,7 +195,7 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
     static const app_ui_slider_row_state_t timeout_state = {
         .id = GALLERY_SLIDER_TIMEOUT,
         .title = "Screen timeout",
-        .subtitle = "Discrete five-second steps",
+        .subtitle = "Five-second steps",
         .min = 5,
         .max = 60,
         .step = 5,
@@ -219,19 +222,23 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
     s_display_mode_index = 0u;
     s_display_mode_state.id = GALLERY_ACTION_DISPLAY_MODE;
     s_display_mode_state.title = "Display mode";
-    s_display_mode_state.subtitle = "Tap to cycle the local value";
+    s_display_mode_state.subtitle = "Tap to cycle value";
     s_display_mode_state.value = s_display_modes[s_display_mode_index];
     s_display_mode_state.enabled = true;
 
     (void)create_section_label(stack_root, "Controls Gallery");
     s_last_event_label = lv_label_create(stack_root);
     if(s_last_event_label != NULL) {
+        const lv_font_t *font = App_UiTheme_GetFont(
+            APP_UI_THEME_FONT_BODY);
+
         lv_label_set_text(s_last_event_label, "Last event: none");
         lv_obj_set_width(s_last_event_label, LV_PCT(100));
-        lv_obj_set_style_text_font(
-            s_last_event_label,
-            App_UiTheme_GetFont(APP_UI_THEME_FONT_BODY),
-            0);
+        lv_obj_set_height(
+            s_last_event_label, (int32_t)font->line_height);
+        lv_label_set_long_mode(
+            s_last_event_label, LV_LABEL_LONG_MODE_DOTS);
+        lv_obj_set_style_text_font(s_last_event_label, font, 0);
         lv_obj_set_style_text_color(
             s_last_event_label,
             App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_MUTED),
