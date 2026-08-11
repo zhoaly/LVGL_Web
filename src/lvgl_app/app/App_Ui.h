@@ -34,6 +34,7 @@ typedef enum {
     APP_UI_PAGE_HID_HUB,
     APP_UI_PAGE_SETTINGS,
     APP_UI_PAGE_DEBUG,
+    APP_UI_PAGE_CONTROLS_GALLERY,
     APP_UI_PAGE_COUNT,
 } app_ui_page_id_t;
 

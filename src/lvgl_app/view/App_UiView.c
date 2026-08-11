@@ -4,14 +4,14 @@
  *
  * 【架构位置】
  * MVC 架构中的 View 层，负责：
- *   1. 创建主界面的 LVGL 对象树（标题栏、内容区、Toast 栏）
+ *   1. 创建主界面的 LVGL 对象树（状态栏、内容区、Toast 栏）
  *   2. 根据页面描述符切换页面内容
  *   3. 触发页面的刷新回调
  *   4. 显示 Toast 消息
  *
  * 【布局结构】
  *   screen_root (flex column)
- *   ├── title_label（标题栏，蓝色 16px）
+ *   ├── status_bar（屏幕级顶部状态栏）
  *   ├── content（内容区，flex grow=1）
  *   │   └── 页面自定义内容（由 page->build 创建）
  *   ├── toast_label（底部消息栏，灰色 14px）
@@ -20,6 +20,7 @@
 
 #include "App_UiView.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "../assets/App_UiTheme.h"
@@ -29,16 +30,127 @@ enum {
     NAV_BAR_ENTER_CLEARANCE = 16,
 };
 
-static void apply_active_page_title(app_ui_view_t *view)
-{
-    const app_ui_page_t *page = view->active_page;
+static const app_ui_menu_drawer_item_t s_menu_items[] = {
+    {
+        .icon_id = APP_UI_ICON_MENU_NETWORK,
+        .label = "Network",
+        .target_page = APP_UI_PAGE_NETWORK,
+    },
+    {
+        .icon_id = APP_UI_ICON_MENU_HID_HUB,
+        .label = "HID Hub",
+        .target_page = APP_UI_PAGE_HID_HUB,
+    },
+    {
+        .icon_id = APP_UI_ICON_MENU_SETTINGS,
+        .label = "Settings",
+        .target_page = APP_UI_PAGE_SETTINGS,
+    },
+    {
+        .icon_id = APP_UI_ICON_MENU_DEBUG,
+        .label = "Debug",
+        .target_page = APP_UI_PAGE_DEBUG,
+    },
+};
 
-    if(page->title != NULL && page->title[0] != '\0') {
-        lv_obj_remove_flag(view->title_label, LV_OBJ_FLAG_HIDDEN);
-        lv_label_set_text(view->title_label, page->title);
-    } else {
-        lv_label_set_text(view->title_label, "");
-        lv_obj_add_flag(view->title_label, LV_OBJ_FLAG_HIDDEN);
+static app_ui_status_wifi_state_t map_wifi_state(app_ui_wifi_state_t state)
+{
+    switch(state) {
+    case APP_UI_WIFI_CONNECTING:
+        return APP_UI_STATUS_WIFI_CONNECTING;
+    case APP_UI_WIFI_CONNECTED:
+        return APP_UI_STATUS_WIFI_CONNECTED;
+    case APP_UI_WIFI_DISCONNECTED:
+    default:
+        return APP_UI_STATUS_WIFI_DISCONNECTED;
+    }
+}
+
+static app_ui_status_bluetooth_state_t map_bluetooth_state(
+    app_ui_bluetooth_state_t state)
+{
+    switch(state) {
+    case APP_UI_BLUETOOTH_ADVERTISING:
+        return APP_UI_STATUS_BLUETOOTH_ADVERTISING;
+    case APP_UI_BLUETOOTH_CONNECTED:
+        return APP_UI_STATUS_BLUETOOTH_CONNECTED;
+    case APP_UI_BLUETOOTH_OFF:
+    default:
+        return APP_UI_STATUS_BLUETOOTH_OFF;
+    }
+}
+
+static void make_status_bar_state(
+    const app_ui_model_t *model,
+    app_ui_status_bar_state_t *state,
+    char *time_text,
+    size_t time_text_size,
+    char *weather_text,
+    size_t weather_text_size)
+{
+    snprintf(time_text, time_text_size, "%s", "--:--");
+    snprintf(weather_text, weather_text_size, "%s", "--C");
+
+    state->time_text = time_text;
+    state->time_synced = false;
+    state->weather_text = weather_text;
+    state->weather_available = false;
+    state->wifi_state = APP_UI_STATUS_WIFI_DISCONNECTED;
+    state->bluetooth_state = APP_UI_STATUS_BLUETOOTH_OFF;
+
+    if(model == NULL) {
+        return;
+    }
+
+    state->time_synced = model->status.time.synced;
+    if(model->status.time.synced) {
+        snprintf(time_text, time_text_size, "%02u:%02u",
+                 (unsigned int)model->status.time.hour,
+                 (unsigned int)model->status.time.minute);
+    }
+
+    state->weather_available = model->status.weather.available;
+    if(model->status.weather.available) {
+        snprintf(weather_text, weather_text_size, "%dC",
+                 (int)model->status.weather.temperature_c);
+    }
+
+    state->wifi_state = map_wifi_state(model->status.wifi);
+    state->bluetooth_state = map_bluetooth_state(model->status.bluetooth);
+}
+
+static void update_status_bar(
+    app_ui_view_t *view,
+    const app_ui_model_t *model)
+{
+    app_ui_status_bar_state_t state;
+    char time_text[6];
+    char weather_text[8];
+
+    make_status_bar_state(model, &state,
+                          time_text, sizeof(time_text),
+                          weather_text, sizeof(weather_text));
+    App_UiStatusBar_Update(&view->status_bar, &state);
+}
+
+static void menu_open_cb(void *user_data)
+{
+    app_ui_view_t *view = user_data;
+
+    if(view != NULL) {
+        (void)App_UiMenuDrawer_Open(
+            &view->menu_drawer,
+            s_menu_items,
+            sizeof(s_menu_items) / sizeof(s_menu_items[0]));
+    }
+}
+
+static void screen_root_delete_cb(lv_event_t *event)
+{
+    app_ui_view_t *view = lv_event_get_user_data(event);
+
+    if(view != NULL) {
+        App_UiMenuDrawer_Destroy(&view->menu_drawer);
     }
 }
 
@@ -103,7 +215,6 @@ static void complete_page_transition(app_ui_view_t *view)
 
     view->transitioning = false;
     view->pending_transition = APP_UI_PAGE_TRANSITION_INITIAL;
-    apply_active_page_title(view);
 
     if(view->nav_enter_pending) {
         start_nav_bar_enter(view);
@@ -162,6 +273,7 @@ static lv_obj_t *create_page_host(lv_obj_t *parent)
 
 void App_UiView_Init(app_ui_view_t *view)
 {
+    app_ui_status_bar_callbacks_t status_callbacks;
     lv_obj_t *screen;
 
     if(view == NULL) {
@@ -185,17 +297,19 @@ void App_UiView_Init(app_ui_view_t *view)
     lv_obj_set_flex_flow(view->screen_root, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_style_pad_all(view->screen_root, 12, 0);
     lv_obj_set_style_pad_row(view->screen_root, 8, 0);
+    lv_obj_add_event_cb(view->screen_root,
+                        screen_root_delete_cb,
+                        LV_EVENT_DELETE,
+                        view);
 
-    /* 创建标题标签 */
-    view->title_label = lv_label_create(view->screen_root);
-    lv_obj_set_style_text_font(
-        view->title_label,
-        App_UiTheme_GetFont(APP_UI_THEME_FONT_TITLE),
-        0);
-    lv_obj_set_style_text_color(
-        view->title_label,
-        App_UiTheme_GetColor(APP_UI_THEME_COLOR_ACCENT),
-        0);
+    /* 创建屏幕级顶部状态栏；页面标题暂时仅保留元数据，不参与布局。 */
+    memset(&status_callbacks, 0, sizeof(status_callbacks));
+    status_callbacks.on_menu = menu_open_cb;
+    status_callbacks.user_data = view;
+    (void)App_UiStatusBar_Create(view->screen_root,
+                                 &view->status_bar,
+                                 NULL,
+                                 &status_callbacks);
 
     /* 创建内容区：填充剩余空间 */
     view->content = lv_obj_create(view->screen_root);
@@ -240,9 +354,10 @@ void App_UiView_ShowPage(app_ui_view_t *view,
     new_host = create_page_host(view->content);
     view->active_page_host = new_host;
 
-    /* 更新活动页面指针；标题在页面切换完成后再替换。 */
+    /* 更新活动页面指针；屏幕级状态栏保持在页面宿主之外。 */
     view->active_page = page;
     view->pending_transition = transition;
+    update_status_bar(view, model);
 
     /* 删除上一页的导航栏，避免页面切换后残留 */
     nav_was_visible = view->nav_bar != NULL;
@@ -311,10 +426,21 @@ void App_UiView_ShowPage(app_ui_view_t *view,
     }
 }
 
-void App_UiView_Refresh(app_ui_view_t *view, const app_ui_model_t *model)
+void App_UiView_Refresh(app_ui_view_t *view,
+                        const app_ui_model_t *model,
+                        uint32_t dirty_mask)
 {
-    /* 调用活动页面的 refresh 回调更新数据展示 */
-    if(view != NULL && view->active_page != NULL && view->active_page->refresh != NULL) {
+    if(view == NULL || model == NULL) {
+        return;
+    }
+
+    if((dirty_mask & APP_UI_DIRTY_STATUS) != 0u) {
+        update_status_bar(view, model);
+    }
+
+    if(view->active_page != NULL &&
+       view->active_page->refresh != NULL &&
+       (dirty_mask & view->active_page->dirty_mask) != 0u) {
         view->active_page->refresh(model);
     }
 }

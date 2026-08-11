@@ -3,6 +3,7 @@
 /build_tests*/
 /.cache/
 /.vscode/
+/.playwright-cli/
 *.zip
 *.wasm
 *.data

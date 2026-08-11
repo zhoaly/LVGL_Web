@@ -76,6 +76,7 @@ target_include_directories(test_ui_pages PRIVATE
     ../src/lvgl_app/pages/network
     ../src/lvgl_app/pages/settings
     ../src/lvgl_app/pages/text
+    ../src/lvgl_app/pages/controls_gallery
     ../src/lvgl_app/pages/registry
 )
 add_test(NAME ui_pages COMMAND test_ui_pages)
@@ -88,11 +89,16 @@ add_library(test_ui_compile OBJECT
     ../src/lvgl_app/assets/App_UiAssets.c
     ../src/lvgl_app/assets/App_UiTheme.c
     ../src/lvgl_app/components/App_UiComponents.c
+    ../src/lvgl_app/components/widgets/action_row/App_UiActionRow.c
     ../src/lvgl_app/components/widgets/menu_drawer/App_UiMenuDrawer.c
     ../src/lvgl_app/components/motion/App_UiMotion.c
+    ../src/lvgl_app/components/widgets/scroll_stack/App_UiScrollStack.c
+    ../src/lvgl_app/components/widgets/slider_row/App_UiSliderRow.c
     ../src/lvgl_app/components/widgets/status_bar/App_UiStatusBar.c
+    ../src/lvgl_app/components/widgets/toggle_row/App_UiToggleRow.c
     ../src/lvgl_app/components/widgets/vertical_menu/App_UiVerticalMenu.c
     ../src/lvgl_app/view/App_UiView.c
+    ../src/lvgl_app/pages/controls_gallery/App_UiPageControlsGallery.c
     ../src/lvgl_app/pages/debug/App_UiPageDebug.c
     ../src/lvgl_app/pages/home/App_UiPageHome.c
     ../src/lvgl_app/pages/hid_hub/App_UiPageHidHub.c

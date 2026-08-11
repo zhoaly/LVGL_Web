@@ -1,6 +1,6 @@
 /**
  * @file App_UiMenuDrawer.c
- * @brief 黑白风格左侧菜单抽屉实现。
+ * @brief 可复用黑白风格左侧菜单抽屉实现。
  */
 
 #include "App_UiMenuDrawer.h"

@@ -1,6 +1,6 @@
 /**
  * @file App_UiMenuDrawer.h
- * @brief Home 左侧菜单抽屉组件。
+ * @brief 可复用左侧菜单抽屉组件。
  */
 
 #ifndef APP_UI_MENU_DRAWER_H
@@ -51,7 +51,7 @@ lv_obj_t *App_UiMenuDrawer_Open(
 void App_UiMenuDrawer_Close(app_ui_menu_drawer_t *drawer);
 
 /**
- * @brief 立即停止动画并销毁抽屉，页面离开时使用。
+ * @brief 立即停止动画并销毁抽屉，组合所有者销毁时使用。
  */
 void App_UiMenuDrawer_Destroy(app_ui_menu_drawer_t *drawer);
 

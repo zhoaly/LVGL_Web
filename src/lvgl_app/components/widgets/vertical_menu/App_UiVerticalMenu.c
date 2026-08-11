@@ -230,6 +230,18 @@ lv_obj_t *App_UiVerticalMenu_Create(
     return menu->root;
 }
 
+bool App_UiVerticalMenu_SetBottomSpace(
+    app_ui_vertical_menu_t *menu,
+    int32_t height)
+{
+    if(menu == NULL || menu->root == NULL || height < 0) {
+        return false;
+    }
+
+    lv_obj_set_style_pad_bottom(menu->root, height, 0);
+    return true;
+}
+
 bool App_UiVerticalMenu_Update(
     app_ui_vertical_menu_t *menu,
     const app_ui_vertical_menu_item_t *items,

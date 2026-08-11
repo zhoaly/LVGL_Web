@@ -49,6 +49,16 @@ lv_obj_t *App_UiVerticalMenu_Create(
     const app_ui_vertical_menu_callbacks_t *callbacks);
 
 /**
+ * @brief Set transparent scrollable space below the final menu item.
+ * @param menu Menu instance returned by App_UiVerticalMenu_Create().
+ * @param height Space height in pixels; must be non-negative.
+ * @return true when the space was applied; false for invalid arguments.
+ */
+bool App_UiVerticalMenu_SetBottomSpace(
+    app_ui_vertical_menu_t *menu,
+    int32_t height);
+
+/**
  * @brief Update menu items without changing the configured callbacks.
  *
  * When the item count is unchanged, rows are updated in place. A count change

@@ -16,6 +16,7 @@ struct _lv_timer_t {
 
 static struct _lv_timer_t s_timer;
 static app_ui_model_t s_refreshed_model;
+static uint32_t s_refreshed_mask;
 static unsigned int s_refresh_count;
 static unsigned int s_show_count;
 static app_ui_page_id_t s_shown_page;
@@ -71,7 +72,7 @@ const app_ui_page_t *App_UiPages_Get(app_ui_page_id_t page_id)
     static const app_ui_page_t home_page = {
         .id = APP_UI_PAGE_HOME,
         .title = "",
-        .dirty_mask = APP_UI_DIRTY_STATUS,
+        .dirty_mask = APP_UI_DIRTY_NONE,
         .show_back = false,
         .build = NULL,
         .refresh = NULL,
@@ -79,7 +80,7 @@ const app_ui_page_t *App_UiPages_Get(app_ui_page_id_t page_id)
     static const app_ui_page_t text_page = {
         .id = APP_UI_PAGE_TEXT,
         .title = "Text",
-        .dirty_mask = APP_UI_DIRTY_SYSTEM,
+        .dirty_mask = APP_UI_DIRTY_NONE,
         .show_back = true,
         .build = NULL,
         .refresh = NULL,
@@ -113,10 +114,12 @@ void App_UiView_ShowPage(
 
 void App_UiView_Refresh(
     app_ui_view_t *view,
-    const app_ui_model_t *model)
+    const app_ui_model_t *model,
+    uint32_t dirty_mask)
 {
     (void)view;
     s_refreshed_model = *model;
+    s_refreshed_mask = dirty_mask;
     s_refresh_count++;
 }
 
@@ -130,6 +133,7 @@ int main(void)
 {
     app_ui_event_t event;
     app_action_request_t request;
+    unsigned int show_count_before;
     unsigned int index;
 
     assert(App_UiInit());
@@ -160,6 +164,7 @@ int main(void)
     assert(s_refreshed_model.status.time.hour == 9u);
     assert(s_refreshed_model.status.time.minute == 14u);
     assert(s_refreshed_model.status.time.synced);
+    assert((s_refreshed_mask & APP_UI_DIRTY_STATUS) != 0u);
 
     memset(&request, 0, sizeof(request));
     request.id = APP_ACTION_ID_UI_NAV_PUSH;
@@ -168,6 +173,45 @@ int main(void)
     s_timer.callback(&s_timer);
     assert(s_shown_page == APP_UI_PAGE_TEXT);
     assert(s_shown_transition == APP_UI_PAGE_TRANSITION_PUSH);
+
+    /* 选择当前菜单页只关闭抽屉，不重复 Push 或增加历史栈。 */
+    show_count_before = s_show_count;
+    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    s_timer.callback(&s_timer);
+    assert(s_show_count == show_count_before);
+
+    /* 子页面不声明 STATUS dirty，全部状态事件仍刷新屏幕级状态栏。 */
+    memset(&event, 0, sizeof(event));
+    event.type = APP_UI_EVENT_TIME_UPDATED;
+    event.data.time.hour = 10u;
+    event.data.time.minute = 30u;
+    event.data.time.synced = true;
+    assert(App_UiPostEvent(&event));
+
+    memset(&event, 0, sizeof(event));
+    event.type = APP_UI_EVENT_WEATHER_UPDATED;
+    event.data.weather.temperature_c = 28;
+    event.data.weather.available = true;
+    assert(App_UiPostEvent(&event));
+
+    memset(&event, 0, sizeof(event));
+    event.type = APP_UI_EVENT_WIFI_STATE_CHANGED;
+    event.data.wifi = APP_UI_WIFI_CONNECTED;
+    assert(App_UiPostEvent(&event));
+
+    memset(&event, 0, sizeof(event));
+    event.type = APP_UI_EVENT_BLUETOOTH_STATE_CHANGED;
+    event.data.bluetooth = APP_UI_BLUETOOTH_CONNECTED;
+    assert(App_UiPostEvent(&event));
+
+    s_timer.callback(&s_timer);
+    assert(s_refreshed_model.status.time.hour == 10u);
+    assert(s_refreshed_model.status.time.minute == 30u);
+    assert(s_refreshed_model.status.weather.temperature_c == 28);
+    assert(s_refreshed_model.status.weather.available);
+    assert(s_refreshed_model.status.wifi == APP_UI_WIFI_CONNECTED);
+    assert(s_refreshed_model.status.bluetooth == APP_UI_BLUETOOTH_CONNECTED);
+    assert((s_refreshed_mask & APP_UI_DIRTY_STATUS) != 0u);
 
     request.id = APP_ACTION_ID_UI_NAV_BACK;
     assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);

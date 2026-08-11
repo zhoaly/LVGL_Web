@@ -7,10 +7,13 @@
 - Pages are static descriptors registered in
   `src/lvgl_app/pages/registry/App_UiPages.c`. The View keeps active and
   outgoing page hosts inside the shared content viewport so Push/Back can
-  animate safely; title and bottom navigation remain outside those hosts.
+  animate safely. The persistent status bar and bottom navigation remain
+  outside those hosts; page title metadata is retained but not rendered.
 - The navigation bar is a floating bottom-level child of `screen_root`, not a
   page child. It is excluded from the root Flex layout so it never shrinks the
-  content viewport, and uses a black-and-white image-based icon style.
+  content viewport, and uses a black-and-white image-based icon style. Pages
+  must not add fixed clearance, padding or spacer objects for the Dock; page
+  content is allowed to extend beneath it and may be covered by design.
 - UI code uses `App_UiAssets` for resource lookup and `App_UiTheme` for
   semantic colors/fonts.
 - Runtime data sources publish typed `app_ui_event_t` values through
@@ -24,27 +27,26 @@
   header and implementation file. Shared component infrastructure such as
   Motion and Action/focus helpers remains directly under `components/`.
 - A stateful component exposes an instance context plus `Create` and `Update`
-  APIs. Pages own the instance and compose components; they do not reach into
-  a component's internal object tree.
+  APIs. Its page or View composition owner holds the instance and does not
+  reach into the component's internal object tree.
 - Component state is plain platform-neutral data. Hardware, Wi-Fi, Bluetooth,
   time synchronization and other services update the Model first; components
   never call those services directly.
 - Component interactions are exposed through callbacks or the shared Action
   layer so the component remains reusable by different pages.
-- The Home top bar is implemented by
-  `components/widgets/status_bar/App_UiStatusBar.{c,h}`. It owns menu, time,
-  weather, Wi-Fi and Bluetooth presentation, while the Home page supplies
-  their current state.
-- The Home menu is implemented by
-  `components/widgets/menu_drawer/App_UiMenuDrawer.{c,h}`. It is a Home-owned
-  overlay created on `lv_layer_top()` and must be destroyed when the Home page
-  root is deleted.
+- The persistent screen-level top bar is implemented by
+  `components/widgets/status_bar/App_UiStatusBar.{c,h}`. The View owns it and
+  maps Model status into its time, weather, Wi-Fi and Bluetooth presentation.
+- The global menu is implemented by
+  `components/widgets/menu_drawer/App_UiMenuDrawer.{c,h}`. It is a View-owned
+  overlay created on `lv_layer_top()` and must be destroyed with the View root.
 - Reusable vertical menus are implemented by
   `components/widgets/vertical_menu/App_UiVerticalMenu.{c,h}`. They expose
   item IDs and callbacks without owning page-specific behavior.
 - Menu destinations use the normal `APP_ACTION_ID_UI_NAV_PUSH` path. Network,
   HID Hub, Settings and Debug are registered pages; non-Home pages use the
-  persistent bottom Back/Home navigation bar.
+  persistent bottom Back/Home navigation bar. Pushing the current page is a
+  no-op so the global menu cannot create duplicate navigation entries.
 - Interactive components use `App_UiComponent_ApplyFocusStyle()` for consistent
   light- or dark-surface focus feedback. Keep focus visible for encoder input,
   but avoid hard-coded blue outlines.

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "../controls_gallery/App_UiPageControlsGallery.h"
 #include "../debug/App_UiPageDebug.h"
 #include "../hid_hub/App_UiPageHidHub.h"
 #include "../home/App_UiPageHome.h"
@@ -23,6 +24,7 @@ const app_ui_page_t *App_UiPages_Get(app_ui_page_id_t page_id)
         App_UiPageHidHub_Get(),
         App_UiPageSettings_Get(),
         App_UiPageDebug_Get(),
+        App_UiPageControlsGallery_Get(),
     };
     uint32_t index;
 

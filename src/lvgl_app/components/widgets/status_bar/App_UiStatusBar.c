@@ -1,6 +1,6 @@
 /**
  * @file App_UiStatusBar.c
- * @brief Home 顶部状态栏组件实现。
+ * @brief 可复用顶部状态栏组件实现。
  */
 
 #include "App_UiStatusBar.h"

@@ -30,6 +30,16 @@ typedef enum {
 } app_ui_component_focus_style_t;
 
 /**
+ * @brief Apply the shared focus ring without button press motion.
+ *
+ * Use this for interactive controls such as sliders whose motion is supplied
+ * by a control-specific App_UiMotion helper.
+ */
+void App_UiComponent_ApplyFocusRing(
+    lv_obj_t *object,
+    app_ui_component_focus_style_t style);
+
+/**
  * @brief 为按钮应用统一、非蓝色的编码器焦点反馈。
  *
  * LIGHT 用于浅色页面上的图标按钮；DARK 用于黑色导航和菜单控件。

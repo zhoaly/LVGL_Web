@@ -4,7 +4,7 @@
  *
  * 【布局结构】
  *   screen_root (flex column, 全屏)
- *   ├── title_label（顶部标题栏，蓝色 16px）
+ *   ├── status_bar（屏幕级顶部状态栏）
  *   ├── content（中间内容区，flex grow=1）
  *   │   └── 页面自定义控件
  *   ├── toast_label（底部消息栏，灰色 14px）
@@ -17,6 +17,8 @@
 #include "lvgl/lvgl.h"
 
 #include "../components/App_UiComponents.h"
+#include "../components/widgets/menu_drawer/App_UiMenuDrawer.h"
+#include "../components/widgets/status_bar/App_UiStatusBar.h"
 #include "../pages/registry/App_UiPages.h"
 
 /**
@@ -24,7 +26,8 @@
  */
 typedef struct {
     lv_obj_t *screen_root;              /**< 根容器 */
-    lv_obj_t *title_label;              /**< 标题栏标签 */
+    app_ui_status_bar_t status_bar;     /**< 屏幕级顶部状态栏 */
+    app_ui_menu_drawer_t menu_drawer;   /**< 屏幕级菜单抽屉 */
     lv_obj_t *content;                  /**< 内容区容器 */
     lv_obj_t *toast_label;              /**< 底部 Toast 标签 */
     lv_obj_t *nav_bar;                  /**< 底部导航栏，首页时为 NULL */
@@ -58,11 +61,14 @@ void App_UiView_ShowPage(app_ui_view_t *view,
                          app_ui_page_transition_t transition);
 
 /**
- * @brief 刷新当前页面的数据展示
+ * @brief 按 dirty mask 刷新全局状态栏和当前页面的数据展示
  * @param view 视图上下文
  * @param model 最新数据模型
+ * @param dirty_mask 本次需要处理的 dirty 标志
  */
-void App_UiView_Refresh(app_ui_view_t *view, const app_ui_model_t *model);
+void App_UiView_Refresh(app_ui_view_t *view,
+                        const app_ui_model_t *model,
+                        uint32_t dirty_mask);
 
 /**
  * @brief 显示 Toast 消息

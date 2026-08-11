@@ -15,7 +15,7 @@
 #include "../assets/App_UiTheme.h"
 #include "motion/App_UiMotion.h"
 
-void App_UiComponent_ApplyFocusStyle(
+void App_UiComponent_ApplyFocusRing(
     lv_obj_t *object,
     app_ui_component_focus_style_t style)
 {
@@ -59,6 +59,17 @@ void App_UiComponent_ApplyFocusStyle(
         lv_obj_set_style_border_opa(object, LV_OPA_40, LV_STATE_FOCUSED);
     }
 
+}
+
+void App_UiComponent_ApplyFocusStyle(
+    lv_obj_t *object,
+    app_ui_component_focus_style_t style)
+{
+    if(object == NULL) {
+        return;
+    }
+
+    App_UiComponent_ApplyFocusRing(object, style);
     App_UiMotion_ApplyButton(object);
 }
 

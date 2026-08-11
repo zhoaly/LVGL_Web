@@ -215,7 +215,8 @@ static void process_navigation(const app_ui_queue_item_t *item)
         transition = APP_UI_PAGE_TRANSITION_HOME;
         break;
     case APP_ACTION_ID_UI_NAV_PUSH:
-        if(App_UiPages_Get(item->data.navigation.page_id) != NULL) {
+        if(App_UiPages_Get(item->data.navigation.page_id) != NULL &&
+           item->data.navigation.page_id != App_UiNav_Current(&s_ui.nav)) {
             changed = App_UiNav_Push(&s_ui.nav, item->data.navigation.page_id);
             transition = APP_UI_PAGE_TRANSITION_PUSH;
         }
@@ -261,9 +262,10 @@ static void ui_pump_timer_cb(lv_timer_t *timer)
         return;
     }
 
-    refresh_mask = s_ui.model.dirty_mask & page->dirty_mask;
+    refresh_mask = s_ui.model.dirty_mask &
+                   (page->dirty_mask | APP_UI_DIRTY_STATUS);
     if(refresh_mask != 0u) {
-        App_UiView_Refresh(&s_ui.view, &s_ui.model);
+        App_UiView_Refresh(&s_ui.view, &s_ui.model, refresh_mask);
         s_ui.model.dirty_mask &= ~refresh_mask;
         App_UiPort_RequestFlush(false);
     }

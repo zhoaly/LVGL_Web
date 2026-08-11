@@ -1,168 +1,35 @@
 /**
  * @file App_UiPageHome.c
- * @brief Home 页面：组合顶部状态栏、菜单抽屉与页面主体。
+ * @brief Home 页面主体；屏幕级状态栏和菜单抽屉由 View 持有。
  */
 
 #include "App_UiPageHome.h"
-
-#include <stdio.h>
 
 #include "lvgl/lvgl.h"
 
 #include "../../assets/App_UiTheme.h"
 #include "../../components/App_UiComponents.h"
-#include "../../components/widgets/menu_drawer/App_UiMenuDrawer.h"
 #include "../../components/motion/App_UiMotion.h"
-#include "../../components/widgets/status_bar/App_UiStatusBar.h"
 
 static app_ui_action_binding_t s_text_page_binding;
-static app_ui_status_bar_t s_status_bar;
-static app_ui_menu_drawer_t s_menu_drawer;
 static lv_obj_t *s_ready_label;
 static lv_obj_t *s_open_button;
 
-static const app_ui_menu_drawer_item_t s_menu_items[] = {
-    {
-        .icon_id = APP_UI_ICON_MENU_NETWORK,
-        .label = "Network",
-        .target_page = APP_UI_PAGE_NETWORK,
-    },
-    {
-        .icon_id = APP_UI_ICON_MENU_HID_HUB,
-        .label = "HID Hub",
-        .target_page = APP_UI_PAGE_HID_HUB,
-    },
-    {
-        .icon_id = APP_UI_ICON_MENU_SETTINGS,
-        .label = "Settings",
-        .target_page = APP_UI_PAGE_SETTINGS,
-    },
-    {
-        .icon_id = APP_UI_ICON_MENU_DEBUG,
-        .label = "Debug",
-        .target_page = APP_UI_PAGE_DEBUG,
-    },
-};
-
-static app_ui_status_wifi_state_t map_wifi_state(app_ui_wifi_state_t state)
-{
-    switch(state) {
-    case APP_UI_WIFI_CONNECTING:
-        return APP_UI_STATUS_WIFI_CONNECTING;
-    case APP_UI_WIFI_CONNECTED:
-        return APP_UI_STATUS_WIFI_CONNECTED;
-    case APP_UI_WIFI_DISCONNECTED:
-    default:
-        return APP_UI_STATUS_WIFI_DISCONNECTED;
-    }
-}
-
-static app_ui_status_bluetooth_state_t map_bluetooth_state(
-    app_ui_bluetooth_state_t state)
-{
-    switch(state) {
-    case APP_UI_BLUETOOTH_ADVERTISING:
-        return APP_UI_STATUS_BLUETOOTH_ADVERTISING;
-    case APP_UI_BLUETOOTH_CONNECTED:
-        return APP_UI_STATUS_BLUETOOTH_CONNECTED;
-    case APP_UI_BLUETOOTH_OFF:
-    default:
-        return APP_UI_STATUS_BLUETOOTH_OFF;
-    }
-}
-
-static void make_status_bar_state(
-    const app_ui_model_t *model,
-    app_ui_status_bar_state_t *state,
-    char *time_text,
-    size_t time_text_size,
-    char *weather_text,
-    size_t weather_text_size)
-{
-    if(state == NULL || time_text == NULL || weather_text == NULL) {
-        return;
-    }
-
-    snprintf(time_text, time_text_size, "%s", "--:--");
-    snprintf(weather_text, weather_text_size, "%s", "--C");
-
-    state->time_text = time_text;
-    state->time_synced = false;
-    state->weather_text = weather_text;
-    state->weather_available = false;
-    state->wifi_state = APP_UI_STATUS_WIFI_DISCONNECTED;
-    state->bluetooth_state = APP_UI_STATUS_BLUETOOTH_OFF;
-
-    if(model == NULL) {
-        return;
-    }
-
-    state->time_synced = model->status.time.synced;
-    if(model->status.time.synced) {
-        snprintf(
-            time_text,
-            time_text_size,
-            "%02u:%02u",
-            (unsigned int)model->status.time.hour,
-            (unsigned int)model->status.time.minute);
-    }
-
-    state->weather_available = model->status.weather.available;
-    if(model->status.weather.available) {
-        snprintf(
-            weather_text,
-            weather_text_size,
-            "%dC",
-            (int)model->status.weather.temperature_c);
-    }
-
-    state->wifi_state = map_wifi_state(model->status.wifi);
-    state->bluetooth_state =
-        map_bluetooth_state(model->status.bluetooth);
-}
-
-static void menu_open_cb(void *user_data)
-{
-    app_ui_menu_drawer_t *drawer = user_data;
-
-    (void)App_UiMenuDrawer_Open(
-        drawer,
-        s_menu_items,
-        sizeof(s_menu_items) / sizeof(s_menu_items[0]));
-}
-
 static void home_root_delete_cb(lv_event_t *event)
 {
-    App_UiMenuDrawer_Destroy(lv_event_get_user_data(event));
+    (void)event;
     s_ready_label = NULL;
     s_open_button = NULL;
 }
 
 static void build(lv_obj_t *parent, const app_ui_model_t *model)
 {
-    static const app_ui_status_bar_callbacks_t status_callbacks = {
-        .on_menu = menu_open_cb,
-        .on_wifi = NULL,
-        .on_bluetooth = NULL,
-        .user_data = &s_menu_drawer,
-    };
     lv_obj_t *body;
     lv_obj_t *open_button;
     lv_obj_t *open_button_label;
     lv_obj_t *page_root;
     lv_obj_t *ready_label;
-    app_ui_status_bar_state_t status_state;
-    char time_text[6];
-    char weather_text[8];
-
-    App_UiMenuDrawer_Destroy(&s_menu_drawer);
-    make_status_bar_state(
-        model,
-        &status_state,
-        time_text,
-        sizeof(time_text),
-        weather_text,
-        sizeof(weather_text));
+    (void)model;
 
     page_root = lv_obj_create(parent);
     lv_obj_remove_style_all(page_root);
@@ -171,18 +38,10 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
     lv_obj_set_flex_flow(page_root, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(page_root, LV_FLEX_ALIGN_START,
                           LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_row(page_root, 8, 0);
-    lv_obj_add_event_cb(
-        page_root,
-        home_root_delete_cb,
-        LV_EVENT_DELETE,
-        &s_menu_drawer);
-
-    (void)App_UiStatusBar_Create(
-        page_root,
-        &s_status_bar,
-        &status_state,
-        &status_callbacks);
+    lv_obj_add_event_cb(page_root,
+                        home_root_delete_cb,
+                        LV_EVENT_DELETE,
+                        NULL);
 
     body = lv_obj_create(page_root);
     lv_obj_remove_style_all(body);
@@ -255,8 +114,6 @@ static void enter(app_ui_page_transition_t transition)
     }
 
     App_UiMotion_AnimateEnter(
-        s_status_bar.root, APP_UI_MOTION_OPACITY_NONE, -4, 0);
-    App_UiMotion_AnimateEnter(
         s_ready_label, APP_UI_MOTION_OPACITY_TEXT, 4, 20);
     App_UiMotion_AnimateEnter(
         s_open_button, APP_UI_MOTION_OPACITY_BACKGROUND, 4, 40);
@@ -264,18 +121,7 @@ static void enter(app_ui_page_transition_t transition)
 
 static void refresh(const app_ui_model_t *model)
 {
-    app_ui_status_bar_state_t status_state;
-    char time_text[6];
-    char weather_text[8];
-
-    make_status_bar_state(
-        model,
-        &status_state,
-        time_text,
-        sizeof(time_text),
-        weather_text,
-        sizeof(weather_text));
-    App_UiStatusBar_Update(&s_status_bar, &status_state);
+    (void)model;
 }
 
 const app_ui_page_t *App_UiPageHome_Get(void)
@@ -283,7 +129,7 @@ const app_ui_page_t *App_UiPageHome_Get(void)
     static const app_ui_page_t page = {
         .id = APP_UI_PAGE_HOME,
         .title = "",
-        .dirty_mask = APP_UI_DIRTY_STATUS,
+        .dirty_mask = APP_UI_DIRTY_NONE,
         .show_back = false,
         .build = build,
         .refresh = refresh,

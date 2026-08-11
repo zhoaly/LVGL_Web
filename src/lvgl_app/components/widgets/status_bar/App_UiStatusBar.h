@@ -1,6 +1,6 @@
 /**
  * @file App_UiStatusBar.h
- * @brief Home 顶部状态栏组件：菜单、时间、天气、Wi-Fi 与蓝牙状态。
+ * @brief 可复用顶部状态栏组件：菜单、时间、天气、Wi-Fi 与蓝牙状态。
  */
 
 #ifndef APP_UI_STATUS_BAR_H
@@ -43,7 +43,7 @@ typedef struct {
 /**
  * @brief 状态栏实例上下文。
  *
- * 页面持有该结构，组件负责填充对象引用。页面重建时可以复用同一实例。
+ * 组合所有者持有该结构，组件负责填充对象引用。
  */
 typedef struct {
     lv_obj_t *root;

@@ -21,7 +21,7 @@ src/lvgl_app/
 ├── assets/              资源注册、主题和自动生成的 LVGL 资源
 ├── model/               UI 状态与 dirty 标志
 ├── navigation/          页面栈和导航操作
-├── view/                屏幕容器、页面渲染和 Toast
+├── view/                全局状态栏/菜单、屏幕容器、页面渲染和 Toast
 ├── components/          可复用控件、Motion 和 Action/Focus 辅助
 │   ├── motion/          共享动效令牌和动画辅助
 │   └── widgets/         跨页面复用的独立视觉组件
@@ -55,7 +55,11 @@ python tools/assets/build_assets.py --check
 4. 需要跳转时，为控件绑定 `APP_ACTION_ID_UI_NAV_PUSH`，并传入目标页面 ID。
 
 首页不会显示导航栏。新增的非首页页面会自动使用通用 Home 导航，并在页面描述符
-允许且导航栈可返回时显示 Back 按钮。
+允许且导航栈可返回时显示 Back 按钮。所有页面共享 View 持有的顶部状态栏和菜单；
+页面描述符仍保留标题文本，但当前不在界面中渲染。
+
+底部导航栏是覆盖在页面之上的屏幕级浮动 Dock，不参与页面布局，也不会压缩内容区。
+页面不应为它添加固定高度、底部内边距或占位对象；内容允许延伸到 Dock 下方并被覆盖。
 
 ## 新增状态或事件
 
@@ -65,6 +69,8 @@ python tools/assets/build_assets.py --check
 4. 让相关页面的 `dirty_mask` 包含该标志，并在 `refresh` 中更新控件。
 
 外部任务通过 `App_UiPostEvent()` 投递事件，不应直接操作 LVGL 控件。
+`APP_UI_DIRTY_STATUS` 由 View 独立消费，因此时间、天气和无线状态在任意页面都会
+刷新；其他 dirty 标志仍由页面描述符声明。
 
 ## 新增通用组件
 
