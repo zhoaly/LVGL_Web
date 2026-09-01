@@ -1,0 +1,35 @@
+/**
+ * @file App_UiCommand.h
+ * @brief 平台无关的 UI 命令出口。
+ */
+
+#ifndef APP_UI_COMMAND_H
+#define APP_UI_COMMAND_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef enum {
+    APP_UI_COMMAND_INVALID = 0,
+    APP_UI_COMMAND_NAV_BACK,
+    APP_UI_COMMAND_NAV_HOME,
+    APP_UI_COMMAND_NAV_PUSH,
+    APP_UI_COMMAND_COUNT,
+} app_ui_command_id_t;
+
+typedef struct {
+    app_ui_command_id_t id;
+    uint32_t page_id;
+} app_ui_command_t;
+
+typedef bool (*app_ui_command_submitter_fn)(const app_ui_command_t *command,
+                                             void *user_data);
+
+/** 注册平台命令提交后端；重复调用会替换现有后端。 */
+bool App_UiCommand_SetSubmitter(app_ui_command_submitter_fn submitter,
+                                void *user_data);
+
+/** 提交控件产生的 UI 命令。 */
+bool App_UiCommand_Submit(const app_ui_command_t *command);
+
+#endif /* APP_UI_COMMAND_H */

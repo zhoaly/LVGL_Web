@@ -3,7 +3,7 @@
 
 #include "lvgl/lvgl.h"
 
-#include "lvgl_app/action/app_action.h"
+#include "lvgl_app/command/App_UiCommand.h"
 #include "lvgl_app/app/App_Ui.h"
 #include "lvgl_app/model/App_UiModel.h"
 #include "lvgl_app/pages/registry/App_UiPages.h"
@@ -21,7 +21,7 @@ static unsigned int s_refresh_count;
 static unsigned int s_show_count;
 static app_ui_page_id_t s_shown_page;
 static app_ui_page_transition_t s_shown_transition;
-static app_action_ui_dispatcher_fn s_dispatcher;
+static app_ui_command_submitter_fn s_dispatcher;
 static void *s_dispatcher_user_data;
 
 lv_timer_t *lv_timer_create(
@@ -40,9 +40,23 @@ bool App_UiPort_Init(void)
     return true;
 }
 
-void App_UiPort_RequestFlush(bool full_refresh)
+void App_UiPort_Deinit(void)
 {
-    (void)full_refresh;
+}
+
+bool App_UiPort_Lock(uint32_t timeout_ms)
+{
+    (void)timeout_ms;
+    return true;
+}
+
+void App_UiPort_Unlock(void) {}
+bool App_UiPort_Present(void) { return true; }
+bool App_UiPort_SetInputGroup(lv_group_t *group) { return group != NULL; }
+bool App_UiPort_SetInputAvailable(bool available)
+{
+    (void)available;
+    return true;
 }
 
 void App_UiPort_EnterCritical(void)
@@ -53,18 +67,13 @@ void App_UiPort_ExitCritical(void)
 {
 }
 
-esp_err_t app_action_init(void)
-{
-    return ESP_OK;
-}
-
-esp_err_t app_action_register_ui_dispatcher(
-    app_action_ui_dispatcher_fn dispatcher,
+bool App_UiPort_BindCommandDispatcher(
+    app_ui_command_submitter_fn dispatcher,
     void *user_data)
 {
     s_dispatcher = dispatcher;
     s_dispatcher_user_data = user_data;
-    return ESP_OK;
+    return dispatcher != NULL;
 }
 
 const app_ui_page_t *App_UiPages_Get(app_ui_page_id_t page_id)
@@ -92,9 +101,10 @@ const app_ui_page_t *App_UiPages_Get(app_ui_page_id_t page_id)
     return page_id == APP_UI_PAGE_TEXT ? &text_page : NULL;
 }
 
-void App_UiView_Init(app_ui_view_t *view)
+bool App_UiView_Init(app_ui_view_t *view)
 {
     memset(view, 0, sizeof(*view));
+    return true;
 }
 
 void App_UiView_ShowPage(
@@ -132,7 +142,7 @@ void App_UiView_ShowToast(app_ui_view_t *view, const char *message)
 int main(void)
 {
     app_ui_event_t event;
-    app_action_request_t request;
+    app_ui_command_t command;
     unsigned int show_count_before;
     unsigned int index;
 
@@ -166,17 +176,17 @@ int main(void)
     assert(s_refreshed_model.status.time.synced);
     assert((s_refreshed_mask & APP_UI_DIRTY_STATUS) != 0u);
 
-    memset(&request, 0, sizeof(request));
-    request.id = APP_ACTION_ID_UI_NAV_PUSH;
-    request.params.ui_navigation.page_id = APP_UI_PAGE_TEXT;
-    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    memset(&command, 0, sizeof(command));
+    command.id = APP_UI_COMMAND_NAV_PUSH;
+    command.page_id = APP_UI_PAGE_TEXT;
+    assert(s_dispatcher(&command, s_dispatcher_user_data));
     s_timer.callback(&s_timer);
     assert(s_shown_page == APP_UI_PAGE_TEXT);
     assert(s_shown_transition == APP_UI_PAGE_TRANSITION_PUSH);
 
     /* 选择当前菜单页只关闭抽屉，不重复 Push 或增加历史栈。 */
     show_count_before = s_show_count;
-    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    assert(s_dispatcher(&command, s_dispatcher_user_data));
     s_timer.callback(&s_timer);
     assert(s_show_count == show_count_before);
 
@@ -213,18 +223,18 @@ int main(void)
     assert(s_refreshed_model.status.bluetooth == APP_UI_BLUETOOTH_CONNECTED);
     assert((s_refreshed_mask & APP_UI_DIRTY_STATUS) != 0u);
 
-    request.id = APP_ACTION_ID_UI_NAV_BACK;
-    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    command.id = APP_UI_COMMAND_NAV_BACK;
+    assert(s_dispatcher(&command, s_dispatcher_user_data));
     s_timer.callback(&s_timer);
     assert(s_shown_page == APP_UI_PAGE_HOME);
     assert(s_shown_transition == APP_UI_PAGE_TRANSITION_BACK);
 
-    request.id = APP_ACTION_ID_UI_NAV_PUSH;
-    request.params.ui_navigation.page_id = APP_UI_PAGE_TEXT;
-    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    command.id = APP_UI_COMMAND_NAV_PUSH;
+    command.page_id = APP_UI_PAGE_TEXT;
+    assert(s_dispatcher(&command, s_dispatcher_user_data));
     s_timer.callback(&s_timer);
-    request.id = APP_ACTION_ID_UI_NAV_HOME;
-    assert(s_dispatcher(&request, s_dispatcher_user_data) == ESP_OK);
+    command.id = APP_UI_COMMAND_NAV_HOME;
+    assert(s_dispatcher(&command, s_dispatcher_user_data));
     s_timer.callback(&s_timer);
     assert(s_shown_page == APP_UI_PAGE_HOME);
     assert(s_shown_transition == APP_UI_PAGE_TRANSITION_HOME);

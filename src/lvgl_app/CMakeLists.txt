@@ -1,35 +1,11 @@
+include("${CMAKE_CURRENT_LIST_DIR}/lvgl_app_sources.cmake")
+
 idf_component_register(
     SRCS
-        "app/App_Ui.c"
-        "action/app_action.c"
-        "action/task_action.c"
-        "model/App_UiModel.c"
-        "navigation/App_UiNav.c"
-        "view/App_UiView.c"
-        "components/App_UiComponents.c"
-        "components/motion/App_UiMotion.c"
-        "components/widgets/action_row/App_UiActionRow.c"
-        "components/widgets/menu_drawer/App_UiMenuDrawer.c"
-        "components/widgets/scroll_stack/App_UiScrollStack.c"
-        "components/widgets/slider_row/App_UiSliderRow.c"
-        "components/widgets/status_bar/App_UiStatusBar.c"
-        "components/widgets/toggle_row/App_UiToggleRow.c"
-        "components/widgets/vertical_menu/App_UiVerticalMenu.c"
-        "assets/App_UiAssets.c"
-        "assets/App_UiTheme.c"
-        "assets/generated/App_UiIcons.c"
-        "pages/registry/App_UiPages.c"
-        "pages/controls_gallery/App_UiPageControlsGallery.c"
-        "pages/debug/App_UiPageDebug.c"
-        "pages/home/App_UiPageHome.c"
-        "pages/hid_hub/App_UiPageHidHub.c"
-        "pages/network/App_UiPageNetwork.c"
-        "pages/settings/App_UiPageSettings.c"
-        "pages/text/App_UiPageText.c"
+        ${LVGL_APP_CORE_SOURCES}
         "port/esp32/App_UiPort_Esp32.c"
     INCLUDE_DIRS
-        "app"
-        "action"
+        ${LVGL_APP_INCLUDE_DIRS}
     REQUIRES
         lvgl
     PRIV_REQUIRES

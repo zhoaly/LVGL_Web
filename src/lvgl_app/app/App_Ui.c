@@ -4,7 +4,7 @@
  *
  * 【架构位置】
  * 此文件是 MVC 架构中的 Controller 部分，负责：
- *   1. 初始化所有模块（Model/View/Nav/Port/Action）
+ *   1. 初始化所有模块（Model/View/Nav/Port/Command）
  *   2. 维护事件队列和泵送（pump）循环
  *   3. 调度导航请求和 Model 事件
  *   4. 协调视图刷新
@@ -25,7 +25,7 @@
 
 #include "lvgl/lvgl.h"
 
-#include "../action/app_action.h"
+#include "../command/App_UiCommand.h"
 #include "../model/App_UiModel.h"
 #include "../navigation/App_UiNav.h"
 #include "../pages/registry/App_UiPages.h"
@@ -54,7 +54,7 @@ typedef struct {
     union {
         app_ui_event_t event;                   /**< Model 事件 */
         struct {
-            app_action_id_t action_id;          /**< 导航动作 ID */
+            app_ui_command_id_t command_id;     /**< 导航命令 ID */
             app_ui_page_id_t page_id;           /**< 目标页面 ID */
         } navigation;                           /**< 导航数据 */
     } data;
@@ -152,42 +152,41 @@ static bool show_current_page(bool full_refresh,
                         App_UiNav_CanBack(&s_ui.nav),
                         transition);
     s_ui.model.dirty_mask &= ~APP_UI_DIRTY_NAV;
-    App_UiPort_RequestFlush(full_refresh);
+    (void)full_refresh;
     return true;
 }
 
 /**
  * @brief UI 导航动作调度器：将 Action 层请求转换为内部队列消息
  *
- * 通过 app_action_register_ui_dispatcher() 注册为回调。
- * 外部调用 app_action_submit() 提交 UI 导航请求时由此函数处理。
+ * 平台后端通过 App_UiPort_BindCommandDispatcher() 绑定此回调。
  */
-static esp_err_t ui_action_dispatcher(const app_action_request_t *request, void *user_data)
+static bool ui_command_dispatcher(const app_ui_command_t *command, void *user_data)
 {
     app_ui_queue_item_t item;
     app_ui_page_id_t page_id;
     (void)user_data;
 
-    if(request == NULL) {
-        return ESP_ERR_INVALID_ARG;
+    if(command == NULL) {
+        return false;
     }
 
-    if(request->id != APP_ACTION_ID_UI_NAV_BACK &&
-       request->id != APP_ACTION_ID_UI_NAV_HOME &&
-       request->id != APP_ACTION_ID_UI_NAV_PUSH) {
-        return ESP_ERR_NOT_SUPPORTED;
+    if(command->id != APP_UI_COMMAND_NAV_BACK &&
+       command->id != APP_UI_COMMAND_NAV_HOME &&
+       command->id != APP_UI_COMMAND_NAV_PUSH) {
+        return false;
     }
 
-    page_id = (app_ui_page_id_t)request->params.ui_navigation.page_id;
-    if(request->id == APP_ACTION_ID_UI_NAV_PUSH && App_UiPages_Get(page_id) == NULL) {
-        return ESP_ERR_INVALID_ARG;
+    page_id = (app_ui_page_id_t)command->page_id;
+    if(command->id == APP_UI_COMMAND_NAV_PUSH && App_UiPages_Get(page_id) == NULL) {
+        return false;
     }
 
     memset(&item, 0, sizeof(item));
     item.type = APP_UI_QUEUE_NAVIGATION;
-    item.data.navigation.action_id = request->id;
+    item.data.navigation.command_id = command->id;
     item.data.navigation.page_id = page_id;
-    return queue_push(&item) ? ESP_OK : ESP_ERR_TIMEOUT;
+    return queue_push(&item);
 }
 
 /**
@@ -203,18 +202,18 @@ static void process_navigation(const app_ui_queue_item_t *item)
         return;
     }
 
-    switch(item->data.navigation.action_id) {
-    case APP_ACTION_ID_UI_NAV_BACK:
+    switch(item->data.navigation.command_id) {
+    case APP_UI_COMMAND_NAV_BACK:
         changed = App_UiNav_Back(&s_ui.nav);
         transition = APP_UI_PAGE_TRANSITION_BACK;
         break;
-    case APP_ACTION_ID_UI_NAV_HOME:
+    case APP_UI_COMMAND_NAV_HOME:
         changed = App_UiNav_Current(&s_ui.nav) != APP_UI_PAGE_HOME ||
                   App_UiNav_CanBack(&s_ui.nav);
         App_UiNav_Home(&s_ui.nav, APP_UI_PAGE_HOME);
         transition = APP_UI_PAGE_TRANSITION_HOME;
         break;
-    case APP_ACTION_ID_UI_NAV_PUSH:
+    case APP_UI_COMMAND_NAV_PUSH:
         if(App_UiPages_Get(item->data.navigation.page_id) != NULL &&
            item->data.navigation.page_id != App_UiNav_Current(&s_ui.nav)) {
             changed = App_UiNav_Push(&s_ui.nav, item->data.navigation.page_id);
@@ -267,40 +266,46 @@ static void ui_pump_timer_cb(lv_timer_t *timer)
     if(refresh_mask != 0u) {
         App_UiView_Refresh(&s_ui.view, &s_ui.model, refresh_mask);
         s_ui.model.dirty_mask &= ~refresh_mask;
-        App_UiPort_RequestFlush(false);
     }
 
     /* ---- 步骤3：处理系统 Toast 消息 ---- */
     if((s_ui.model.dirty_mask & APP_UI_DIRTY_SYSTEM) != 0u) {
         App_UiView_ShowToast(&s_ui.view, s_ui.model.message);
         s_ui.model.dirty_mask &= ~APP_UI_DIRTY_SYSTEM;
-        App_UiPort_RequestFlush(false);
     }
 }
 
 bool App_UiInit(void)
 {
+    bool view_ready;
+
+    if(s_ui.ready) {
+        return true;
+    }
+
     /* 清零全局上下文 */
     memset(&s_ui, 0, sizeof(s_ui));
 
-    /* 初始化 MVC 核心模块 */
+    if(!App_UiPort_Init() || !App_UiPort_Lock(0u)) {
+        App_UiPort_Deinit();
+        return false;
+    }
+
     App_UiModel_Init(&s_ui.model);
     App_UiNav_Init(&s_ui.nav, APP_UI_PAGE_HOME);
-
-    /* 初始化平台层和 Action 系统 */
-    if(!App_UiPort_Init() || app_action_init() != ESP_OK) {
-        return false;
+    view_ready = App_UiView_Init(&s_ui.view);
+    if(view_ready) {
+        view_ready = App_UiPort_BindCommandDispatcher(
+            ui_command_dispatcher, NULL);
     }
 
-    /* 初始化视图层，注册 UI 调度器 */
-    App_UiView_Init(&s_ui.view);
-    if(app_action_register_ui_dispatcher(ui_action_dispatcher, NULL) != ESP_OK) {
-        return false;
+    if(view_ready) {
+        s_ui.pump_timer = lv_timer_create(ui_pump_timer_cb, 50, NULL);
     }
+    App_UiPort_Unlock();
 
-    /* 创建事件泵送定时器（50ms 周期） */
-    s_ui.pump_timer = lv_timer_create(ui_pump_timer_cb, 50, NULL);
-    if(s_ui.pump_timer == NULL) {
+    if(!view_ready || s_ui.pump_timer == NULL) {
+        App_UiPort_Deinit();
         return false;
     }
 
@@ -310,6 +315,8 @@ bool App_UiInit(void)
 
 bool App_UiStart(void)
 {
+    bool started;
+
     if(!s_ui.ready) {
         return false;
     }
@@ -317,12 +324,21 @@ bool App_UiStart(void)
         return true;
     }
 
-    if(!show_current_page(true, APP_UI_PAGE_TRANSITION_INITIAL)) {
+    if(!App_UiPort_Lock(0u)) {
         return false;
     }
 
-    s_ui.started = true;
-    return true;
+    started = show_current_page(true, APP_UI_PAGE_TRANSITION_INITIAL);
+    if(started) {
+        started = App_UiPort_Present();
+    }
+    App_UiPort_Unlock();
+
+    if(started) {
+        started = App_UiPort_SetInputAvailable(true);
+    }
+    s_ui.started = started;
+    return started;
 }
 
 bool App_UiPostEvent(const app_ui_event_t *event)

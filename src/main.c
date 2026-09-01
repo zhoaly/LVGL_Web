@@ -21,6 +21,7 @@
 #include <stddef.h>
 
 #include "lvgl_app/app/App_Ui.h"
+#include "lvgl_app/port/pc/App_UiPort_Pc.h"
 
 static lv_indev_t *encoder_indev;
 static int32_t encoder_pending_steps;
@@ -209,6 +210,7 @@ int main(void)
     lv_indev_set_read_cb(encoder_indev, encoder_read);
     lv_indev_set_display(encoder_indev, display);
     lv_indev_set_group(encoder_indev, encoder_group);
+    App_UiPort_PcSetEncoderIndev(encoder_indev);
 
     /* ---- 步骤4：初始化并启动 UI 应用框架 ---- */
     if(!App_UiInit() || !App_UiStart()) {

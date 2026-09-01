@@ -17,7 +17,7 @@ Runtime 等演示业务已经移除，保留的代码均用于后续扩展框架
 ```text
 src/lvgl_app/
 ├── app/                 UI 生命周期、事件队列和总调度
-├── action/              通用 UI Action、Dispatcher 和任务快照
+├── command/             平台无关 UI 命令出口
 ├── assets/              资源注册、主题和自动生成的 LVGL 资源
 ├── model/               UI 状态与 dirty 标志
 ├── navigation/          页面栈和导航操作
@@ -52,7 +52,7 @@ python tools/assets/build_assets.py --check
 2. 在 `pages/` 下为页面创建独立文件夹，实现自己的 `build`、`refresh` 和
    `App_UiPageXxx_Get()`。
 3. 在 `pages/registry/App_UiPages.c` 中注册页面描述符。
-4. 需要跳转时，为控件绑定 `APP_ACTION_ID_UI_NAV_PUSH`，并传入目标页面 ID。
+4. 需要跳转时，为控件绑定 `APP_UI_COMMAND_NAV_PUSH`，并传入目标页面 ID。
 
 首页不会显示导航栏。新增的非首页页面会自动使用通用 Home 导航，并在页面描述符
 允许且导航栈可返回时显示 Back 按钮。所有页面共享 View 持有的顶部状态栏和菜单；
@@ -106,4 +106,6 @@ if (App_UiInit()) {
 ```
 
 在真实硬件上，需要在 `port/esp32/App_UiPort_Esp32.c` 中接入显示、输入和屏幕刷新
-策略。Action 已包含在该组件内，不再依赖外部 `app_action` 组件。
+策略。固件平台需要提供 `App_UiPort` 实现，并将 `App_UiCommand` 接到自己的
+命令系统。通用源码清单位于 `src/lvgl_app/lvgl_app_sources.cmake`，不会编译
+Web/ESP32 平台 Port 或产品级 Action 后端。

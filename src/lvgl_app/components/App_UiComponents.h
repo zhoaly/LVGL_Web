@@ -13,7 +13,7 @@
 #include <stdbool.h>
 
 #include "lvgl/lvgl.h"
-#include "../action/app_action.h"
+#include "../command/App_UiCommand.h"
 
 /**
  * @brief UI 动作绑定结构体
@@ -21,7 +21,7 @@
  * 将 LVGL 控件的点击事件与 Action 请求关联。
  */
 typedef struct {
-    app_action_request_t request;  /**< 点击时要提交的 Action 请求 */
+    app_ui_command_t command;  /**< 点击时要提交的 UI 命令 */
 } app_ui_action_binding_t;
 
 typedef enum {
@@ -55,7 +55,7 @@ void App_UiComponent_ApplyFocusStyle(
  * @param page_id 目标页面 ID（用于导航动作）
  */
 void App_UiComponent_InitAction(app_ui_action_binding_t *binding,
-                                app_action_id_t action_id,
+                                app_ui_command_id_t command_id,
                                 uint32_t page_id);
 
 /**

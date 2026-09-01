@@ -7,13 +7,18 @@
  *
  * 【平台差异】
  *   - PC（浏览器）：SDL 显示，无需临界区保护
- *   - ESP32：墨水屏驱动，FreeRTOS 临界区保护
+ *   - ESP32：具体显示驱动、LVGL 任务锁和输入设备
  */
 
 #ifndef APP_UI_PORT_H
 #define APP_UI_PORT_H
 
 #include <stdbool.h>
+#include <stdint.h>
+
+#include "lvgl/lvgl.h"
+
+#include "../command/App_UiCommand.h"
 
 /**
  * @brief 初始化平台相关资源
@@ -21,11 +26,19 @@
  */
 bool App_UiPort_Init(void);
 
+void App_UiPort_Deinit(void);
+bool App_UiPort_Lock(uint32_t timeout_ms);
+void App_UiPort_Unlock(void);
+bool App_UiPort_Present(void);
+bool App_UiPort_SetInputGroup(lv_group_t *group);
+bool App_UiPort_SetInputAvailable(bool available);
+
 /**
- * @brief 请求屏幕刷新
- * @param full_refresh true=全屏刷新，false=局部刷新
+ * @brief 将 UI 内部命令处理器绑定到当前平台命令后端。
  */
-void App_UiPort_RequestFlush(bool full_refresh);
+bool App_UiPort_BindCommandDispatcher(
+    app_ui_command_submitter_fn dispatcher,
+    void *user_data);
 
 /**
  * @brief 进入临界区（保护事件队列的并发访问）

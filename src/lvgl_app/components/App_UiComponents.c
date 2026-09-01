@@ -77,15 +77,14 @@ void App_UiComponent_ApplyFocusStyle(
  * @brief LVGL 点击事件回调：提交绑定的 Action 请求
  *
  * 当用户点击控件时，从事件用户数据中获取 binding，
- * 然后通过 app_action_submit() 提交请求。
+ * 然后通过 App_UiCommand_Submit() 提交请求。
  */
 static void action_click_cb(lv_event_t *event)
 {
     app_ui_action_binding_t *binding = lv_event_get_user_data(event);
-    app_action_job_id_t job_id;
 
     if(binding != NULL) {
-        (void)app_action_submit(&binding->request, &job_id);
+        (void)App_UiCommand_Submit(&binding->command);
     }
 }
 
@@ -164,7 +163,7 @@ static lv_obj_t *create_nav_icon_button(lv_obj_t *parent,
 }
 
 void App_UiComponent_InitAction(app_ui_action_binding_t *binding,
-                                app_action_id_t action_id,
+                                app_ui_command_id_t command_id,
                                 uint32_t page_id)
 {
     if(binding == NULL) {
@@ -173,8 +172,8 @@ void App_UiComponent_InitAction(app_ui_action_binding_t *binding,
 
     /* 初始化绑定结构体：清零后设置动作 ID 和目标页面 */
     memset(binding, 0, sizeof(*binding));
-    binding->request.id = action_id;
-    binding->request.params.ui_navigation.page_id = page_id;
+    binding->command.id = command_id;
+    binding->command.page_id = page_id;
 }
 
 void App_UiComponent_BindAction(lv_obj_t *object, app_ui_action_binding_t *binding)
@@ -234,8 +233,8 @@ lv_obj_t *App_UiComponent_CreateNavBar(lv_obj_t *parent,
     lv_obj_set_style_shadow_offset_y(row, 3, 0);
 
     /* 初始化返回和首页按钮的 Action 绑定 */
-    App_UiComponent_InitAction(&bindings[0], APP_ACTION_ID_UI_NAV_BACK, 0u);
-    App_UiComponent_InitAction(&bindings[1], APP_ACTION_ID_UI_NAV_HOME, 0u);
+    App_UiComponent_InitAction(&bindings[0], APP_UI_COMMAND_NAV_BACK, 0u);
+    App_UiComponent_InitAction(&bindings[1], APP_UI_COMMAND_NAV_HOME, 0u);
 
     /* 根据 can_back 决定是否显示返回图标 */
     if(can_back) {

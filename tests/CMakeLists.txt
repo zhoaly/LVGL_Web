@@ -15,6 +15,13 @@ add_executable(test_app_action
 target_include_directories(test_app_action PRIVATE ../src/lvgl_app/action)
 add_test(NAME app_action COMMAND test_app_action)
 
+add_executable(test_ui_command
+    test_ui_command.c
+    ../src/lvgl_app/command/App_UiCommand.c
+)
+target_include_directories(test_ui_command PRIVATE ../src/lvgl_app/command)
+add_test(NAME ui_command COMMAND test_ui_command)
+
 add_executable(test_ui_model
     test_ui_model.c
     ../src/lvgl_app/model/App_UiModel.c
@@ -28,6 +35,7 @@ add_test(NAME ui_model COMMAND test_ui_model)
 add_executable(test_ui_event_queue
     test_ui_event_queue.c
     ../src/lvgl_app/app/App_Ui.c
+    ../src/lvgl_app/command/App_UiCommand.c
     ../src/lvgl_app/model/App_UiModel.c
     ../src/lvgl_app/navigation/App_UiNav.c
 )

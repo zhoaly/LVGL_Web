@@ -13,6 +13,8 @@
 typedef struct _lv_obj_t lv_obj_t;
 typedef struct _lv_event_t lv_event_t;
 typedef struct _lv_timer_t lv_timer_t;
+typedef struct _lv_group_t lv_group_t;
+typedef struct _lv_indev_t lv_indev_t;
 typedef uint8_t lv_opa_t;
 typedef int32_t lv_style_prop_t;
 typedef int32_t lv_anim_enable_t;
@@ -137,6 +139,7 @@ typedef void (*lv_anim_completed_cb_t)(lv_anim_t *animation);
 lv_color_t lv_color_hex(uint32_t value);
 lv_obj_t *lv_screen_active(void);
 lv_obj_t *lv_layer_top(void);
+void lv_refr_now(void *display);
 lv_obj_t *lv_obj_create(lv_obj_t *parent);
 lv_obj_t *lv_button_create(lv_obj_t *parent);
 lv_obj_t *lv_label_create(lv_obj_t *parent);
@@ -183,6 +186,13 @@ void lv_label_set_text(lv_obj_t *label, const char *text);
 void lv_label_set_long_mode(lv_obj_t *label, int32_t mode);
 void lv_image_set_src(lv_obj_t *image, const void *source);
 void lv_group_remove_obj(lv_obj_t *object);
+lv_group_t *lv_group_create(void);
+lv_group_t *lv_group_get_default(void);
+void lv_group_set_default(lv_group_t *group);
+uint32_t lv_group_get_obj_count(const lv_group_t *group);
+lv_obj_t *lv_group_get_obj_by_index(const lv_group_t *group, uint32_t index);
+void lv_group_focus_obj(lv_obj_t *object);
+void lv_indev_set_group(lv_indev_t *indev, lv_group_t *group);
 void lv_slider_set_range(lv_obj_t *slider, int32_t minimum, int32_t maximum);
 void lv_slider_set_value(
     lv_obj_t *slider,

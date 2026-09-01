@@ -30,16 +30,37 @@ static void scrim_opa_anim_cb(void *object, int32_t value)
 static void drawer_delete_cb(lv_event_t *event)
 {
     app_ui_menu_drawer_t *drawer = lv_event_get_user_data(event);
+    void (*on_closed)(void *user_data);
+    void *closed_user_data;
 
     if(drawer == NULL) {
         return;
     }
 
+    on_closed = drawer->on_closed;
+    closed_user_data = drawer->closed_user_data;
     drawer->root = NULL;
     drawer->scrim = NULL;
     drawer->panel = NULL;
     drawer->item_count = 0u;
     drawer->closing = false;
+    drawer->on_closed = NULL;
+    drawer->closed_user_data = NULL;
+    if(on_closed != NULL) {
+        on_closed(closed_user_data);
+    }
+}
+
+void App_UiMenuDrawer_SetClosedCallback(
+    app_ui_menu_drawer_t *drawer,
+    void (*callback)(void *user_data),
+    void *user_data)
+{
+    if(drawer == NULL) {
+        return;
+    }
+    drawer->on_closed = callback;
+    drawer->closed_user_data = callback != NULL ? user_data : NULL;
 }
 
 static void close_anim_completed_cb(lv_anim_t *animation)
@@ -143,7 +164,7 @@ static lv_obj_t *create_menu_item(
         0);
 
     App_UiComponent_InitAction(
-        binding, APP_ACTION_ID_UI_NAV_PUSH, item->target_page);
+        binding, APP_UI_COMMAND_NAV_PUSH, item->target_page);
     App_UiComponent_BindAction(button, binding);
     lv_obj_add_event_cb(button, item_click_cb, LV_EVENT_CLICKED, drawer);
     return button;

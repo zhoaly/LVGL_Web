@@ -28,10 +28,41 @@ bool App_UiPort_Init(void)
     return true;
 }
 
-void App_UiPort_RequestFlush(bool full_refresh)
+void App_UiPort_Deinit(void)
 {
-    /* TODO: 实现墨水屏局刷/全刷切换 */
-    (void)full_refresh;
+}
+
+bool App_UiPort_Lock(uint32_t timeout_ms)
+{
+    (void)timeout_ms;
+    return true;
+}
+
+void App_UiPort_Unlock(void)
+{
+}
+
+bool App_UiPort_Present(void)
+{
+    return true;
+}
+
+bool App_UiPort_SetInputGroup(lv_group_t *group)
+{
+    return group != NULL;
+}
+
+bool App_UiPort_SetInputAvailable(bool available)
+{
+    (void)available;
+    return true;
+}
+
+bool App_UiPort_BindCommandDispatcher(
+    app_ui_command_submitter_fn dispatcher,
+    void *user_data)
+{
+    return App_UiCommand_SetSubmitter(dispatcher, user_data);
 }
 
 void App_UiPort_EnterCritical(void)

@@ -42,34 +42,11 @@ else()
     FetchContent_MakeAvailable(lvgl)
 endif()
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/src/lvgl_app/lvgl_app_sources.cmake")
+
 add_executable(index
     src/main.c
-    src/lvgl_app/app/App_Ui.c
-    src/lvgl_app/action/app_action.c
-    src/lvgl_app/action/task_action.c
-    src/lvgl_app/model/App_UiModel.c
-    src/lvgl_app/navigation/App_UiNav.c
-    src/lvgl_app/view/App_UiView.c
-    src/lvgl_app/components/App_UiComponents.c
-    src/lvgl_app/components/motion/App_UiMotion.c
-    src/lvgl_app/components/widgets/action_row/App_UiActionRow.c
-    src/lvgl_app/components/widgets/menu_drawer/App_UiMenuDrawer.c
-    src/lvgl_app/components/widgets/scroll_stack/App_UiScrollStack.c
-    src/lvgl_app/components/widgets/slider_row/App_UiSliderRow.c
-    src/lvgl_app/components/widgets/status_bar/App_UiStatusBar.c
-    src/lvgl_app/components/widgets/toggle_row/App_UiToggleRow.c
-    src/lvgl_app/components/widgets/vertical_menu/App_UiVerticalMenu.c
-    src/lvgl_app/assets/App_UiAssets.c
-    src/lvgl_app/assets/App_UiTheme.c
-    src/lvgl_app/assets/generated/App_UiIcons.c
-    src/lvgl_app/pages/registry/App_UiPages.c
-    src/lvgl_app/pages/controls_gallery/App_UiPageControlsGallery.c
-    src/lvgl_app/pages/debug/App_UiPageDebug.c
-    src/lvgl_app/pages/home/App_UiPageHome.c
-    src/lvgl_app/pages/hid_hub/App_UiPageHidHub.c
-    src/lvgl_app/pages/network/App_UiPageNetwork.c
-    src/lvgl_app/pages/settings/App_UiPageSettings.c
-    src/lvgl_app/pages/text/App_UiPageText.c
+    ${LVGL_APP_CORE_SOURCES}
 )
 
 if(EMSCRIPTEN)
@@ -96,6 +73,7 @@ target_compile_definitions(index PRIVATE
 target_include_directories(index PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    ${LVGL_APP_INCLUDE_DIRS}
 )
 
 target_link_libraries(index PRIVATE lvgl)

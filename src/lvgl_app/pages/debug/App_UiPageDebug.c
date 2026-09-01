@@ -7,7 +7,7 @@
 
 #include "lvgl/lvgl.h"
 
-#include "../../action/app_action.h"
+#include "../../command/App_UiCommand.h"
 #include "../../components/widgets/vertical_menu/App_UiVerticalMenu.h"
 
 enum {
@@ -30,17 +30,16 @@ static const app_ui_vertical_menu_item_t s_debug_items[] = {
 
 static void item_activated(uint32_t item_id, void *user_data)
 {
-    app_action_job_id_t job_id;
-    app_action_request_t request = {0};
+    app_ui_command_t command = {0};
     (void)user_data;
 
     if(item_id != DEBUG_ITEM_CONTROLS_GALLERY) {
         return;
     }
 
-    request.id = APP_ACTION_ID_UI_NAV_PUSH;
-    request.params.ui_navigation.page_id = APP_UI_PAGE_CONTROLS_GALLERY;
-    (void)app_action_submit(&request, &job_id);
+    command.id = APP_UI_COMMAND_NAV_PUSH;
+    command.page_id = APP_UI_PAGE_CONTROLS_GALLERY;
+    (void)App_UiCommand_Submit(&command);
 }
 
 static void build(lv_obj_t *parent, const app_ui_model_t *model)

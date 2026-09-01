@@ -33,6 +33,8 @@ typedef struct {
     lv_obj_t *nav_bar;                  /**< 底部导航栏，首页时为 NULL */
     const app_ui_page_t *active_page;   /**< 当前活动页面 */
     app_ui_action_binding_t nav_bindings[2]; /**< 导航栏绑定（[0]=返回, [1]=首页） */
+    lv_group_t *input_group;             /**< 页面与常驻控件的编码器焦点组 */
+    lv_group_t *menu_group;              /**< 菜单打开时独占的焦点组 */
     lv_obj_t *active_page_host;
     lv_obj_t *outgoing_page_host;
     bool transitioning;
@@ -45,7 +47,7 @@ typedef struct {
  * @brief 初始化视图层
  * @param view 视图上下文指针
  */
-void App_UiView_Init(app_ui_view_t *view);
+bool App_UiView_Init(app_ui_view_t *view);
 
 /**
  * @brief 显示指定页面

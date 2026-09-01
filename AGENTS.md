@@ -32,8 +32,8 @@
 - Component state is plain platform-neutral data. Hardware, Wi-Fi, Bluetooth,
   time synchronization and other services update the Model first; components
   never call those services directly.
-- Component interactions are exposed through callbacks or the shared Action
-  layer so the component remains reusable by different pages.
+- Component interactions are exposed through callbacks or the shared
+  `App_UiCommand` boundary so each platform can select its own command backend.
 - The persistent screen-level top bar is implemented by
   `components/widgets/status_bar/App_UiStatusBar.{c,h}`. The View owns it and
   maps Model status into its time, weather, Wi-Fi and Bluetooth presentation.
@@ -43,7 +43,7 @@
 - Reusable vertical menus are implemented by
   `components/widgets/vertical_menu/App_UiVerticalMenu.{c,h}`. They expose
   item IDs and callbacks without owning page-specific behavior.
-- Menu destinations use the normal `APP_ACTION_ID_UI_NAV_PUSH` path. Network,
+- Menu destinations use the normal `APP_UI_COMMAND_NAV_PUSH` path. Network,
   HID Hub, Settings and Debug are registered pages; non-Home pages use the
   persistent bottom Back/Home navigation bar. Pushing the current page is a
   no-op so the global menu cannot create duplicate navigation entries.

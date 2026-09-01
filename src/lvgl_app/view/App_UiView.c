@@ -25,6 +25,7 @@
 
 #include "../assets/App_UiTheme.h"
 #include "../components/motion/App_UiMotion.h"
+#include "../port/App_UiPort.h"
 
 enum {
     NAV_BAR_ENTER_CLEARANCE = 16,
@@ -52,6 +53,8 @@ static const app_ui_menu_drawer_item_t s_menu_items[] = {
         .target_page = APP_UI_PAGE_DEBUG,
     },
 };
+
+static void menu_closed_cb(void *user_data);
 
 static app_ui_status_wifi_state_t map_wifi_state(app_ui_wifi_state_t state)
 {
@@ -136,12 +139,43 @@ static void update_status_bar(
 static void menu_open_cb(void *user_data)
 {
     app_ui_view_t *view = user_data;
+    lv_obj_t *drawer_root;
 
-    if(view != NULL) {
-        (void)App_UiMenuDrawer_Open(
-            &view->menu_drawer,
-            s_menu_items,
-            sizeof(s_menu_items) / sizeof(s_menu_items[0]));
+    if(view == NULL) {
+        return;
+    }
+    if(view->menu_group == NULL) {
+        view->menu_group = lv_group_create();
+    }
+    if(view->menu_group == NULL) {
+        return;
+    }
+
+    lv_group_set_default(view->menu_group);
+    drawer_root = App_UiMenuDrawer_Open(
+        &view->menu_drawer,
+        s_menu_items,
+        sizeof(s_menu_items) / sizeof(s_menu_items[0]));
+    lv_group_set_default(view->input_group);
+    if(drawer_root != NULL) {
+        App_UiMenuDrawer_SetClosedCallback(
+            &view->menu_drawer, menu_closed_cb, view);
+        (void)App_UiPort_SetInputGroup(view->menu_group);
+        if(lv_group_get_obj_count(view->menu_group) > 0u) {
+            lv_obj_t *first = lv_group_get_obj_by_index(view->menu_group, 0u);
+            if(first != NULL) {
+                lv_group_focus_obj(first);
+            }
+        }
+    }
+}
+
+static void menu_closed_cb(void *user_data)
+{
+    app_ui_view_t *view = user_data;
+
+    if(view != NULL && view->input_group != NULL) {
+        (void)App_UiPort_SetInputGroup(view->input_group);
     }
 }
 
@@ -150,6 +184,7 @@ static void screen_root_delete_cb(lv_event_t *event)
     app_ui_view_t *view = lv_event_get_user_data(event);
 
     if(view != NULL) {
+        App_UiMenuDrawer_SetClosedCallback(&view->menu_drawer, NULL, NULL);
         App_UiMenuDrawer_Destroy(&view->menu_drawer);
     }
 }
@@ -271,17 +306,29 @@ static lv_obj_t *create_page_host(lv_obj_t *parent)
     return host;
 }
 
-void App_UiView_Init(app_ui_view_t *view)
+bool App_UiView_Init(app_ui_view_t *view)
 {
     app_ui_status_bar_callbacks_t status_callbacks;
     lv_obj_t *screen;
 
     if(view == NULL) {
-        return;
+        return false;
     }
 
     /* 清零视图上下文 */
     memset(view, 0, sizeof(*view));
+
+    view->input_group = lv_group_get_default();
+    if(view->input_group == NULL) {
+        view->input_group = lv_group_create();
+    }
+    if(view->input_group == NULL) {
+        return false;
+    }
+    lv_group_set_default(view->input_group);
+    if(!App_UiPort_SetInputGroup(view->input_group)) {
+        return false;
+    }
 
     /* 获取当前活动屏幕并设置背景色 */
     screen = lv_screen_active();
@@ -329,6 +376,7 @@ void App_UiView_Init(app_ui_view_t *view)
         App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_MUTED),
         0);
     lv_label_set_text(view->toast_label, "");
+    return true;
 }
 
 void App_UiView_ShowPage(app_ui_view_t *view,
@@ -344,6 +392,7 @@ void App_UiView_ShowPage(app_ui_view_t *view,
     int32_t exit_x;
     int32_t page_width;
     bool nav_was_visible;
+    uint32_t focus_start_index;
 
     if(view == NULL || page == NULL || model == NULL) {
         return;
@@ -369,6 +418,10 @@ void App_UiView_ShowPage(app_ui_view_t *view,
     view->nav_enter_pending = false;
     view->nav_enter_offset = 0;
 
+    focus_start_index = view->input_group != NULL
+                            ? lv_group_get_obj_count(view->input_group)
+                            : 0u;
+
     /* 调用页面构建回调创建自定义内容 */
     if(page->build != NULL) {
         page->build(new_host, model);
@@ -382,6 +435,15 @@ void App_UiView_ShowPage(app_ui_view_t *view,
         if(!nav_was_visible &&
            transition != APP_UI_PAGE_TRANSITION_INITIAL) {
             prepare_nav_bar_enter(view);
+        }
+    }
+
+    if(view->input_group != NULL &&
+       lv_group_get_obj_count(view->input_group) > focus_start_index) {
+        lv_obj_t *first = lv_group_get_obj_by_index(
+            view->input_group, focus_start_index);
+        if(first != NULL) {
+            lv_group_focus_obj(first);
         }
     }
 

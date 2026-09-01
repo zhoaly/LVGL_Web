@@ -102,7 +102,7 @@ static void build(lv_obj_t *parent, const app_ui_model_t *model)
     lv_obj_center(open_button_label);
 
     App_UiComponent_InitAction(&s_text_page_binding,
-                               APP_ACTION_ID_UI_NAV_PUSH,
+                               APP_UI_COMMAND_NAV_PUSH,
                                APP_UI_PAGE_TEXT);
     App_UiComponent_BindAction(open_button, &s_text_page_binding);
 }

@@ -30,7 +30,14 @@ typedef struct {
     app_ui_action_binding_t bindings[APP_UI_MENU_DRAWER_MAX_ITEMS];
     size_t item_count;
     bool closing;
+    void (*on_closed)(void *user_data);
+    void *closed_user_data;
 } app_ui_menu_drawer_t;
+
+void App_UiMenuDrawer_SetClosedCallback(
+    app_ui_menu_drawer_t *drawer,
+    void (*callback)(void *user_data),
+    void *user_data);
 
 /**
  * @brief 在 LVGL 顶层创建并打开菜单抽屉。
