@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 #include "../../../app/App_Ui.h"
 #include "../../../assets/App_UiAssets.h"

@@ -12,7 +12,7 @@
 
 #include <stdbool.h>
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 #include "../command/App_UiCommand.h"
 
 /**

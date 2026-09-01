@@ -10,7 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 #define APP_UI_VERTICAL_MENU_MAX_ITEMS 16u
 

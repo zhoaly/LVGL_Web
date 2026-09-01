@@ -5,8 +5,9 @@
 
 #include "App_UiPageDebug.h"
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
+#include "../../app/App_Ui.h"
 #include "../../command/App_UiCommand.h"
 #include "../../components/widgets/vertical_menu/App_UiVerticalMenu.h"
 
@@ -34,6 +35,7 @@ static void item_activated(uint32_t item_id, void *user_data)
     (void)user_data;
 
     if(item_id != DEBUG_ITEM_CONTROLS_GALLERY) {
+        (void)App_UiShowMessage("Not implemented");
         return;
     }
 

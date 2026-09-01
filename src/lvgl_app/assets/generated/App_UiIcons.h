@@ -2,7 +2,7 @@
 #ifndef APP_UI_ICONS_GENERATED_H
 #define APP_UI_ICONS_GENERATED_H
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 extern const lv_image_dsc_t app_ui_icon_nav_back;
 extern const lv_image_dsc_t app_ui_icon_nav_home;

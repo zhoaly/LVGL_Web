@@ -5,7 +5,7 @@
 
 #include "App_UiPageSettings.h"
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 #include "../../assets/App_UiAssets.h"
 #include "../../assets/App_UiTheme.h"

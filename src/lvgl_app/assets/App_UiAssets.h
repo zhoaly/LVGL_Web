@@ -6,7 +6,7 @@
 #ifndef APP_UI_ASSETS_H
 #define APP_UI_ASSETS_H
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 typedef enum {
     APP_UI_ICON_NAV_BACK = 0,

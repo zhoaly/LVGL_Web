@@ -14,7 +14,7 @@
 #ifndef APP_UI_VIEW_H
 #define APP_UI_VIEW_H
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 #include "../components/App_UiComponents.h"
 #include "../components/widgets/menu_drawer/App_UiMenuDrawer.h"

@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 #include "lvgl_app/components/motion/App_UiMotion.h"
 

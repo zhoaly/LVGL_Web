@@ -260,7 +260,7 @@ def generate_header(icons: list[Icon]) -> str:
 #ifndef APP_UI_ICONS_GENERATED_H
 #define APP_UI_ICONS_GENERATED_H
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 {declarations}
 

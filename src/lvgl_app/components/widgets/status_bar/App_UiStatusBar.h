@@ -8,7 +8,7 @@
 
 #include <stdbool.h>
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 typedef enum {
     APP_UI_STATUS_WIFI_DISCONNECTED = 0,

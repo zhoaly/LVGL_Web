@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 #include "../command/App_UiCommand.h"
 #include "../model/App_UiModel.h"

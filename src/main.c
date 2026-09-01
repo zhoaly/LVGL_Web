@@ -14,7 +14,7 @@
  * LVGL 使用 SDL 后端进行渲染和输入处理。
  */
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 #include <emscripten.h>
 #include <stdint.h>

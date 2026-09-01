@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 #include "lvgl_app/command/App_UiCommand.h"
 #include "lvgl_app/app/App_Ui.h"

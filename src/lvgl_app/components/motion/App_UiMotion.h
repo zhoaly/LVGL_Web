@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 typedef enum {
     APP_UI_MOTION_LEVEL_NORMAL = 0,

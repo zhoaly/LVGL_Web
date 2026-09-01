@@ -6,7 +6,7 @@
 #ifndef APP_UI_THEME_H
 #define APP_UI_THEME_H
 
-#include "lvgl/lvgl.h"
+#include "lvgl.h"
 
 typedef enum {
     APP_UI_THEME_COLOR_SCREEN_BACKGROUND = 0,
