@@ -136,19 +136,20 @@ static void update_status_bar(
     App_UiStatusBar_Update(&view->status_bar, &state);
 }
 
-static void menu_open_cb(void *user_data)
+bool App_UiView_OpenMenu(app_ui_view_t *view)
 {
-    app_ui_view_t *view = user_data;
     lv_obj_t *drawer_root;
+    bool was_open;
 
     if(view == NULL) {
-        return;
+        return false;
     }
     if(view->menu_group == NULL) {
         view->menu_group = lv_group_create();
     }
+    was_open = App_UiMenuDrawer_IsOpen(&view->menu_drawer);
     if(view->menu_group == NULL) {
-        return;
+        return false;
     }
 
     lv_group_set_default(view->menu_group);
@@ -161,13 +162,29 @@ static void menu_open_cb(void *user_data)
         App_UiMenuDrawer_SetClosedCallback(
             &view->menu_drawer, menu_closed_cb, view);
         (void)App_UiPort_SetInputGroup(view->menu_group);
-        if(lv_group_get_obj_count(view->menu_group) > 0u) {
+        if(!was_open && lv_group_get_obj_count(view->menu_group) > 0u) {
             lv_obj_t *first = lv_group_get_obj_by_index(view->menu_group, 0u);
             if(first != NULL) {
                 lv_group_focus_obj(first);
             }
         }
+        return true;
     }
+    return false;
+}
+
+static void menu_open_cb(void *user_data)
+{
+    (void)App_UiView_OpenMenu((app_ui_view_t *)user_data);
+}
+
+bool App_UiView_CloseMenu(app_ui_view_t *view)
+{
+    if(view == NULL) {
+        return false;
+    }
+    App_UiMenuDrawer_Close(&view->menu_drawer);
+    return true;
 }
 
 static void menu_closed_cb(void *user_data)

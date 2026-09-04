@@ -28,6 +28,20 @@ int main(void)
     assert(s_last_command.id == APP_UI_COMMAND_NAV_PUSH);
     assert(s_last_command.page_id == 3u);
 
+    command = (app_ui_command_t){.id = APP_UI_COMMAND_MENU_OPEN};
+    assert(App_UiCommand_Submit(&command));
+    assert(s_submit_count == 2u);
+    assert(s_last_command.id == APP_UI_COMMAND_MENU_OPEN);
+
+    command = (app_ui_command_t){.id = APP_UI_COMMAND_MENU_CLOSE};
+    assert(App_UiCommand_Submit(&command));
+    assert(s_submit_count == 3u);
+    assert(s_last_command.id == APP_UI_COMMAND_MENU_CLOSE);
+
+    command.page_id = 1u;
+    assert(!App_UiCommand_Submit(&command));
+
+    command.id = APP_UI_COMMAND_NAV_PUSH;
     command.page_id = 0u;
     assert(!App_UiCommand_Submit(&command));
     command.id = APP_UI_COMMAND_INVALID;

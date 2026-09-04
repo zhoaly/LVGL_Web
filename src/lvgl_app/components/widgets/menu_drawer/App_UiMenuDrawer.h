@@ -30,6 +30,8 @@ typedef struct {
     app_ui_action_binding_t bindings[APP_UI_MENU_DRAWER_MAX_ITEMS];
     size_t item_count;
     bool closing;
+    int32_t panel_x;
+    lv_opa_t scrim_opa;
     void (*on_closed)(void *user_data);
     void *closed_user_data;
 } app_ui_menu_drawer_t;

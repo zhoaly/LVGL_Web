@@ -27,5 +27,11 @@ bool App_UiCommand_Submit(const app_ui_command_t *command)
     if(command->id == APP_UI_COMMAND_NAV_PUSH && command->page_id == 0u) {
         return false;
     }
+    if(command->id == APP_UI_COMMAND_MENU_OPEN && command->page_id != 0u) {
+        return false;
+    }
+    if(command->id == APP_UI_COMMAND_MENU_CLOSE && command->page_id != 0u) {
+        return false;
+    }
     return s_submitter(command, s_submitter_user_data);
 }

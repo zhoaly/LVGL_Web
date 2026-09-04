@@ -14,6 +14,7 @@
  *   -> queue_pop() -> 类型判断
  *      - MODEL_EVENT: App_UiModel_ApplyEvent() 更新数据
  *      - NAVIGATION: process_navigation() 页面跳转
+ *      - MENU_OPEN/MENU_CLOSE: 操作屏幕级菜单
  *   -> 检查 dirty_mask -> App_UiView_Refresh() 刷新视图
  *   -> 检查系统消息 -> App_UiView_ShowToast() 显示 Toast
  */
@@ -44,6 +45,8 @@
 typedef enum {
     APP_UI_QUEUE_MODEL_EVENT = 0,  /**< Model 数据更新事件 */
     APP_UI_QUEUE_NAVIGATION,       /**< 页面导航请求 */
+    APP_UI_QUEUE_MENU_OPEN,        /**< 打开屏幕级菜单 */
+    APP_UI_QUEUE_MENU_CLOSE,       /**< 关闭屏幕级菜单 */
 } app_ui_queue_item_type_t;
 
 /**
@@ -171,6 +174,23 @@ static bool ui_command_dispatcher(const app_ui_command_t *command, void *user_da
         return false;
     }
 
+    if(command->id == APP_UI_COMMAND_MENU_OPEN) {
+        if(!s_ui.started) {
+            return false;
+        }
+        memset(&item, 0, sizeof(item));
+        item.type = APP_UI_QUEUE_MENU_OPEN;
+        return queue_push(&item);
+    }
+    if(command->id == APP_UI_COMMAND_MENU_CLOSE) {
+        if(!s_ui.started) {
+            return false;
+        }
+        memset(&item, 0, sizeof(item));
+        item.type = APP_UI_QUEUE_MENU_CLOSE;
+        return queue_push(&item);
+    }
+
     if(command->id != APP_UI_COMMAND_NAV_BACK &&
        command->id != APP_UI_COMMAND_NAV_HOME &&
        command->id != APP_UI_COMMAND_NAV_PUSH) {
@@ -229,6 +249,20 @@ static void process_navigation(const app_ui_queue_item_t *item)
     }
 }
 
+static void process_menu_open(void)
+{
+    if(!App_UiView_OpenMenu(&s_ui.view)) {
+        printf("[UI] failed to open menu\n");
+    }
+}
+
+static void process_menu_close(void)
+{
+    if(!App_UiView_CloseMenu(&s_ui.view)) {
+        printf("[UI] failed to close menu\n");
+    }
+}
+
 /**
  * @brief LVGL 定时器回调：事件泵送循环的核心
  *
@@ -251,6 +285,10 @@ static void ui_pump_timer_cb(lv_timer_t *timer)
             App_UiModel_ApplyEvent(&s_ui.model, &item.data.event);
         } else if(item.type == APP_UI_QUEUE_NAVIGATION) {
             process_navigation(&item);
+        } else if(item.type == APP_UI_QUEUE_MENU_OPEN) {
+            process_menu_open();
+        } else if(item.type == APP_UI_QUEUE_MENU_CLOSE) {
+            process_menu_close();
         }
         processed++;
     }

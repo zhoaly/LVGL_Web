@@ -49,6 +49,12 @@ typedef struct {
  */
 bool App_UiView_Init(app_ui_view_t *view);
 
+/** 打开屏幕级菜单抽屉；调用必须发生在 LVGL 线程/事件泵上下文。 */
+bool App_UiView_OpenMenu(app_ui_view_t *view);
+
+/** 关闭屏幕级菜单抽屉；调用必须发生在 LVGL 线程/事件泵上下文。 */
+bool App_UiView_CloseMenu(app_ui_view_t *view);
+
 /**
  * @brief 显示指定页面
  * @param view 视图上下文

@@ -19,12 +19,20 @@ enum {
 
 static void panel_x_anim_cb(void *object, int32_t value)
 {
-    lv_obj_set_x((lv_obj_t *)object, value);
+    app_ui_menu_drawer_t *drawer = object;
+    if(drawer != NULL && drawer->panel != NULL) {
+        drawer->panel_x = value;
+        lv_obj_set_x(drawer->panel, value);
+    }
 }
 
 static void scrim_opa_anim_cb(void *object, int32_t value)
 {
-    lv_obj_set_style_bg_opa((lv_obj_t *)object, (lv_opa_t)value, 0);
+    app_ui_menu_drawer_t *drawer = object;
+    if(drawer != NULL && drawer->scrim != NULL) {
+        drawer->scrim_opa = (lv_opa_t)value;
+        lv_obj_set_style_bg_opa(drawer->scrim, drawer->scrim_opa, 0);
+    }
 }
 
 static void drawer_delete_cb(lv_event_t *event)
@@ -80,6 +88,40 @@ static void close_click_cb(lv_event_t *event)
 static void item_click_cb(lv_event_t *event)
 {
     App_UiMenuDrawer_Close(lv_event_get_user_data(event));
+}
+
+static void start_open_animation(
+    app_ui_menu_drawer_t *drawer,
+    bool from_start)
+{
+    lv_anim_t animation;
+    uint32_t duration;
+    /* 通过动画回调保存当前位置；重新打开时取消关闭动画并从当前位置继续。 */
+    int32_t panel_start = from_start ? -MENU_DRAWER_WIDTH : drawer->panel_x;
+    int32_t scrim_start = from_start ? LV_OPA_TRANSP : drawer->scrim_opa;
+
+    duration = App_UiMotion_GetDuration(APP_UI_MOTION_DURATION_DRAWER_OPEN);
+    if(duration == 0u) {
+        scrim_opa_anim_cb(drawer, LV_OPA_40);
+        panel_x_anim_cb(drawer, 0);
+        return;
+    }
+
+    lv_anim_init(&animation);
+    lv_anim_set_var(&animation, drawer);
+    lv_anim_set_exec_cb(&animation, scrim_opa_anim_cb);
+    lv_anim_set_values(&animation, scrim_start, LV_OPA_40);
+    lv_anim_set_duration(&animation, duration);
+    lv_anim_set_path_cb(&animation, App_UiMotion_GetPath());
+    lv_anim_start(&animation);
+
+    lv_anim_init(&animation);
+    lv_anim_set_var(&animation, drawer);
+    lv_anim_set_exec_cb(&animation, panel_x_anim_cb);
+    lv_anim_set_values(&animation, panel_start, 0);
+    lv_anim_set_duration(&animation, duration);
+    lv_anim_set_path_cb(&animation, App_UiMotion_GetPath());
+    lv_anim_start(&animation);
 }
 
 static lv_obj_t *create_icon(lv_obj_t *parent, app_ui_icon_id_t icon_id)
@@ -197,8 +239,6 @@ lv_obj_t *App_UiMenuDrawer_Open(
     const app_ui_menu_drawer_item_t *items,
     size_t item_count)
 {
-    lv_anim_t animation;
-    uint32_t duration;
     lv_obj_t *footer;
     lv_obj_t *header;
     lv_obj_t *header_label;
@@ -210,6 +250,12 @@ lv_obj_t *App_UiMenuDrawer_Open(
         return NULL;
     }
     if(drawer->root != NULL) {
+        if(drawer->closing) {
+            lv_anim_delete(drawer, panel_x_anim_cb);
+            lv_anim_delete(drawer, scrim_opa_anim_cb);
+            drawer->closing = false;
+            start_open_animation(drawer, false);
+        }
         return drawer->root;
     }
 
@@ -229,7 +275,8 @@ lv_obj_t *App_UiMenuDrawer_Open(
         drawer->scrim,
         App_UiTheme_GetColor(APP_UI_THEME_COLOR_NAV_SHADOW),
         0);
-    lv_obj_set_style_bg_opa(drawer->scrim, LV_OPA_TRANSP, 0);
+    drawer->scrim_opa = LV_OPA_TRANSP;
+    lv_obj_set_style_bg_opa(drawer->scrim, drawer->scrim_opa, 0);
     lv_obj_add_flag(drawer->scrim, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(
         drawer->scrim, close_click_cb, LV_EVENT_CLICKED, drawer);
@@ -237,7 +284,8 @@ lv_obj_t *App_UiMenuDrawer_Open(
     drawer->panel = lv_obj_create(drawer->root);
     lv_obj_remove_style_all(drawer->panel);
     lv_obj_set_size(drawer->panel, MENU_DRAWER_WIDTH, LV_PCT(100));
-    lv_obj_set_x(drawer->panel, -MENU_DRAWER_WIDTH);
+    drawer->panel_x = -MENU_DRAWER_WIDTH;
+    lv_obj_set_x(drawer->panel, drawer->panel_x);
     lv_obj_set_flex_flow(drawer->panel, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_style_bg_color(
         drawer->panel,
@@ -308,28 +356,7 @@ lv_obj_t *App_UiMenuDrawer_Open(
         App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_MUTED),
         0);
 
-    duration = App_UiMotion_GetDuration(
-        APP_UI_MOTION_DURATION_DRAWER_OPEN);
-    if(duration == 0u) {
-        scrim_opa_anim_cb(drawer->scrim, LV_OPA_40);
-        panel_x_anim_cb(drawer->panel, 0);
-    } else {
-        lv_anim_init(&animation);
-        lv_anim_set_var(&animation, drawer->scrim);
-        lv_anim_set_exec_cb(&animation, scrim_opa_anim_cb);
-        lv_anim_set_values(&animation, LV_OPA_TRANSP, LV_OPA_40);
-        lv_anim_set_duration(&animation, duration);
-        lv_anim_set_path_cb(&animation, App_UiMotion_GetPath());
-        lv_anim_start(&animation);
-
-        lv_anim_init(&animation);
-        lv_anim_set_var(&animation, drawer->panel);
-        lv_anim_set_exec_cb(&animation, panel_x_anim_cb);
-        lv_anim_set_values(&animation, -MENU_DRAWER_WIDTH, 0);
-        lv_anim_set_duration(&animation, duration);
-        lv_anim_set_path_cb(&animation, App_UiMotion_GetPath());
-        lv_anim_start(&animation);
-    }
+    start_open_animation(drawer, true);
     return drawer->root;
 }
 
@@ -343,8 +370,8 @@ void App_UiMenuDrawer_Close(app_ui_menu_drawer_t *drawer)
     }
     drawer->closing = true;
 
-    lv_anim_delete(drawer->panel, panel_x_anim_cb);
-    lv_anim_delete(drawer->scrim, scrim_opa_anim_cb);
+    lv_anim_delete(drawer, panel_x_anim_cb);
+    lv_anim_delete(drawer, scrim_opa_anim_cb);
     duration = App_UiMotion_GetDuration(
         APP_UI_MOTION_DURATION_DRAWER_CLOSE);
     if(duration == 0u) {
@@ -353,17 +380,17 @@ void App_UiMenuDrawer_Close(app_ui_menu_drawer_t *drawer)
     }
 
     lv_anim_init(&animation);
-    lv_anim_set_var(&animation, drawer->scrim);
+    lv_anim_set_var(&animation, drawer);
     lv_anim_set_exec_cb(&animation, scrim_opa_anim_cb);
-    lv_anim_set_values(&animation, LV_OPA_40, LV_OPA_TRANSP);
+    lv_anim_set_values(&animation, drawer->scrim_opa, LV_OPA_TRANSP);
     lv_anim_set_duration(&animation, duration);
     lv_anim_set_path_cb(&animation, App_UiMotion_GetPath());
     lv_anim_start(&animation);
 
     lv_anim_init(&animation);
-    lv_anim_set_var(&animation, drawer->panel);
+    lv_anim_set_var(&animation, drawer);
     lv_anim_set_exec_cb(&animation, panel_x_anim_cb);
-    lv_anim_set_values(&animation, 0, -MENU_DRAWER_WIDTH);
+    lv_anim_set_values(&animation, drawer->panel_x, -MENU_DRAWER_WIDTH);
     lv_anim_set_duration(&animation, duration);
     lv_anim_set_path_cb(&animation, App_UiMotion_GetPath());
     lv_anim_set_user_data(&animation, drawer);
@@ -377,8 +404,8 @@ void App_UiMenuDrawer_Destroy(app_ui_menu_drawer_t *drawer)
         return;
     }
 
-    lv_anim_delete(drawer->panel, panel_x_anim_cb);
-    lv_anim_delete(drawer->scrim, scrim_opa_anim_cb);
+    lv_anim_delete(drawer, panel_x_anim_cb);
+    lv_anim_delete(drawer, scrim_opa_anim_cb);
     lv_obj_delete(drawer->root);
 }
 

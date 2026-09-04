@@ -19,6 +19,8 @@ static app_ui_model_t s_refreshed_model;
 static uint32_t s_refreshed_mask;
 static unsigned int s_refresh_count;
 static unsigned int s_show_count;
+static unsigned int s_menu_open_count;
+static unsigned int s_menu_close_count;
 static app_ui_page_id_t s_shown_page;
 static app_ui_page_transition_t s_shown_transition;
 static app_ui_command_submitter_fn s_dispatcher;
@@ -107,6 +109,20 @@ bool App_UiView_Init(app_ui_view_t *view)
     return true;
 }
 
+bool App_UiView_OpenMenu(app_ui_view_t *view)
+{
+    (void)view;
+    s_menu_open_count++;
+    return true;
+}
+
+bool App_UiView_CloseMenu(app_ui_view_t *view)
+{
+    (void)view;
+    s_menu_close_count++;
+    return true;
+}
+
 void App_UiView_ShowPage(
     app_ui_view_t *view,
     const app_ui_page_t *page,
@@ -154,6 +170,19 @@ int main(void)
     assert(s_shown_page == APP_UI_PAGE_HOME);
     assert(s_shown_transition == APP_UI_PAGE_TRANSITION_INITIAL);
 
+    memset(&command, 0, sizeof(command));
+    command.id = APP_UI_COMMAND_MENU_OPEN;
+    assert(s_dispatcher(&command, s_dispatcher_user_data));
+    assert(s_menu_open_count == 0u);
+    s_timer.callback(&s_timer);
+    assert(s_menu_open_count == 1u);
+
+    command.id = APP_UI_COMMAND_MENU_CLOSE;
+    assert(s_dispatcher(&command, s_dispatcher_user_data));
+    assert(s_menu_close_count == 0u);
+    s_timer.callback(&s_timer);
+    assert(s_menu_close_count == 1u);
+
     memset(&event, 0, sizeof(event));
     event.type = APP_UI_EVENT_TIME_UPDATED;
     event.data.time.hour = 9u;
@@ -170,7 +199,7 @@ int main(void)
     s_timer.callback(&s_timer);
     s_timer.callback(&s_timer);
 
-    assert(s_refresh_count == 2u);
+    assert(s_refresh_count == 3u);
     assert(s_refreshed_model.status.time.hour == 9u);
     assert(s_refreshed_model.status.time.minute == 14u);
     assert(s_refreshed_model.status.time.synced);
