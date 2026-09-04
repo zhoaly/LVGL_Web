@@ -4,6 +4,7 @@
  */
 
 #include <string.h>
+#include "App_UiWifiMock.h"
 
 #include <emscripten/emscripten.h>
 
@@ -45,17 +46,7 @@ int app_ui_mock_set_weather(int temperature_c, int available)
 EMSCRIPTEN_KEEPALIVE
 int app_ui_mock_set_wifi(int state)
 {
-    app_ui_event_t event;
-
-    if(state < APP_UI_WIFI_DISCONNECTED ||
-       state >= APP_UI_WIFI_STATE_COUNT) {
-        return 0;
-    }
-
-    memset(&event, 0, sizeof(event));
-    event.type = APP_UI_EVENT_WIFI_STATE_CHANGED;
-    event.data.wifi = (app_ui_wifi_state_t)state;
-    return App_UiPostEvent(&event) ? 1 : 0;
+    return App_UiWifiMock_SetStatus(state);
 }
 
 EMSCRIPTEN_KEEPALIVE

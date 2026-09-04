@@ -282,6 +282,19 @@
         </label>
       </div>
 
+      <label>Wi-Fi scenario
+        <select id="mock-wifi-scenario">
+          <option value="0">Normal networks</option>
+          <option value="1">No networks</option>
+          <option value="2">Results truncated</option>
+          <option value="3">Authentication failure</option>
+          <option value="4">Network disappears</option>
+          <option value="5">DHCP timeout</option>
+          <option value="6">Storage failure</option>
+          <option value="7">Command rejected</option>
+          <option value="8">Scan failure</option>
+        </select>
+      </label>
       <div class="preset-grid" aria-label="Mock presets">
         <button type="button" data-mock-preset="offline">Offline</button>
         <button type="button" data-mock-preset="connecting">Connecting</button>

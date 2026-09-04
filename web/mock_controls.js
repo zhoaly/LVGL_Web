@@ -323,6 +323,14 @@
         setPanelStatus(error instanceof Error ? error.message : String(error));
     }
 
+    function setWifiScenario(scenario) {
+        integerInRange(scenario, 0, 8, "wifi scenario");
+        if(!callBridge("app_ui_mock_wifi_scenario", [scenario])) {
+            throw new Error("Wi-Fi operation active; try again after completion");
+        }
+        setPanelStatus("Wi-Fi scenario: " + scenario);
+    }
+
     function bindControls() {
         controls = {
             time: document.getElementById("mock-time"),
@@ -339,6 +347,11 @@
             status: document.getElementById("mock-status")
         };
 
+        var scenario = document.getElementById("mock-wifi-scenario");
+        if(scenario) scenario.addEventListener("change", function() {
+            try { setWifiScenario(Number(scenario.value)); }
+            catch(error) { reportControlError(error); }
+        });
         controls.apply.addEventListener("click", function() {
             try {
                 applyStatus(statusFromControls(), {
@@ -384,6 +397,7 @@
 
     window.lvglMock = {
         setStatus: setStatus,
+        setWifiScenario: setWifiScenario,
         applyPreset: applyPreset,
         startDemo: startDemo,
         stopDemo: stopDemo,
@@ -406,6 +420,9 @@
             switch(message.action) {
                 case "probe":
                     sendReady();
+                    break;
+                case "wifi-scenario":
+                    setWifiScenario(message.scenario);
                     break;
                 case "set-status":
                     setStatus(message.status);

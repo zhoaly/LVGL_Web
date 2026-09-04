@@ -20,6 +20,10 @@
  * 保存 UI 当前需要显示的所有状态数据。
  */
 typedef struct {
+    app_ui_wifi_runtime_t wifi;
+    app_ui_wifi_networks_t networks;
+    app_ui_wifi_profiles_t profiles;
+    app_ui_wifi_operation_t operations[APP_UI_WIFI_OPERATION_CAPACITY];
     app_ui_page_id_t current_page;  /**< 当前显示的页面 ID */
     uint32_t dirty_mask;            /**< 脏标志位：标记哪些域发生了变更 */
     char message[48];               /**< 系统消息/提示文本 */

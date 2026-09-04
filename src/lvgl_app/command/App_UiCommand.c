@@ -33,5 +33,11 @@ bool App_UiCommand_Submit(const app_ui_command_t *command)
     if(command->id == APP_UI_COMMAND_MENU_CLOSE && command->page_id != 0u) {
         return false;
     }
+    if(command->id >= APP_UI_COMMAND_WIFI_SET_ENABLED &&
+       command->operation_token == 0u) return false;
+    if((command->id == APP_UI_COMMAND_WIFI_CONNECT_PROFILE ||
+        command->id == APP_UI_COMMAND_WIFI_FORGET_PROFILE ||
+        command->id == APP_UI_COMMAND_WIFI_SET_PROFILE_AUTO_JOIN) &&
+       command->profile_id == 0u) return false;
     return s_submitter(command, s_submitter_user_data);
 }

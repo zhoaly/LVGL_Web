@@ -46,6 +46,13 @@ int main(void)
     assert(!App_UiCommand_Submit(&command));
     command.id = APP_UI_COMMAND_INVALID;
     assert(!App_UiCommand_Submit(&command));
+    command = (app_ui_command_t){.id=APP_UI_COMMAND_WIFI_CONNECT_PROFILE};
+    assert(!App_UiCommand_Submit(&command));
+    command.operation_token = 1;
+    assert(!App_UiCommand_Submit(&command));
+    command.profile_id = 42;
+    assert(App_UiCommand_Submit(&command));
+    assert(s_last_command.profile_id == 42 && s_last_command.operation_token == 1);
     assert(!App_UiCommand_SetSubmitter(NULL, NULL));
     return 0;
 }

@@ -17,6 +17,7 @@ typedef struct {
     const char *subtitle;
     const char *value;
     bool enabled;
+    int32_t value_width; /**< Optional trailing column width; 0 keeps the default. */
 } app_ui_action_row_state_t;
 
 typedef void (*app_ui_action_row_activate_cb_t)(

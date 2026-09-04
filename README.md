@@ -109,3 +109,34 @@ if (App_UiInit()) {
 策略。固件平台需要提供 `App_UiPort` 实现，并将 `App_UiCommand` 接到自己的
 命令系统。通用源码清单位于 `src/lvgl_app/lvgl_app_sources.cmake`，不会编译
 Web/ESP32 平台 Port 或产品级 Action 后端。
+
+## Wi-Fi UI
+
+Network displays up to 20 scan entries and connects saved profiles only.
+Password entry and new-network provisioning are deferred. Unsupported and
+unsaved entries remain clickable and explain the limitation with a timed Toast.
+Saved Networks contains connection, auto-join and confirmed Forget actions.
+All production writes cross `App_UiCommand`; runtime data and per-operation
+outcomes enter through typed `App_UiPostEvent` values. Portable UI never imports
+ESP-IDF types or reads credentials.
+
+The Web backend in `src/simulator/App_UiWifiMock.c` implements asynchronous
+scan/connection and profile operations. The Mock panel's Wi-Fi scenario selector
+covers normal/empty/truncated results, auth/AP/DHCP/storage failures, command
+rejection and scan failure. Embedded clients can send `wifi-scenario` with an
+integer `scenario` (0..8) on the existing `zlyhub.lvgl.mock.v1` channel.
+
+For software-rendered interaction tests with real LVGL 9.3:
+
+```sh
+cmake -S tests/runtime -B build_runtime -DLVGL_SOURCE_DIR=/path/to/lvgl
+cmake --build build_runtime --target ui_runtime
+ctest --test-dir build_runtime --output-on-failure
+python tests/runtime/render_snapshots.py build_runtime
+```
+
+The test uses a 128 KiB LVGL heap and a 240x320 memory display. It checks saved
+connections, password Toast expiry, modal input isolation, failed authentication,
+Forget/Cancel, scan truncation, focus visibility and repeated page transitions.
+PPM/PNG captures are generated only in the build directory. Firmware radio and
+reboot persistence still require hardware validation.

@@ -11,6 +11,7 @@ set(LVGL_APP_CORE_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/components/App_UiComponents.c"
     "${CMAKE_CURRENT_LIST_DIR}/components/motion/App_UiMotion.c"
     "${CMAKE_CURRENT_LIST_DIR}/components/widgets/action_row/App_UiActionRow.c"
+    "${CMAKE_CURRENT_LIST_DIR}/components/widgets/confirm_dialog/App_UiConfirmDialog.c"
     "${CMAKE_CURRENT_LIST_DIR}/components/widgets/menu_drawer/App_UiMenuDrawer.c"
     "${CMAKE_CURRENT_LIST_DIR}/components/widgets/scroll_stack/App_UiScrollStack.c"
     "${CMAKE_CURRENT_LIST_DIR}/components/widgets/slider_row/App_UiSliderRow.c"

@@ -16,12 +16,22 @@ typedef enum {
     APP_UI_COMMAND_NAV_PUSH,
     APP_UI_COMMAND_MENU_OPEN,
     APP_UI_COMMAND_MENU_CLOSE,
+    APP_UI_COMMAND_WIFI_SET_ENABLED,
+    APP_UI_COMMAND_WIFI_SCAN,
+    APP_UI_COMMAND_WIFI_CONNECT_PROFILE,
+    APP_UI_COMMAND_WIFI_DISCONNECT,
+    APP_UI_COMMAND_WIFI_FORGET_PROFILE,
+    APP_UI_COMMAND_WIFI_SET_AUTO_CONNECT,
+    APP_UI_COMMAND_WIFI_SET_PROFILE_AUTO_JOIN,
     APP_UI_COMMAND_COUNT,
 } app_ui_command_id_t;
 
 typedef struct {
     app_ui_command_id_t id;
     uint32_t page_id;
+    uint32_t operation_token;
+    uint32_t profile_id;
+    bool enabled;
 } app_ui_command_t;
 
 typedef bool (*app_ui_command_submitter_fn)(const app_ui_command_t *command,

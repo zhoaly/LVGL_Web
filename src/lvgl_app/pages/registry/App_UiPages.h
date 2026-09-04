@@ -40,6 +40,9 @@ typedef struct {
     bool show_back;                         /**< 是否显示返回按钮 */
     void (*build)(lv_obj_t *parent, const app_ui_model_t *model);     /**< 构建 UI 回调 */
     void (*refresh)(const app_ui_model_t *model);                     /**< 刷新数据回调 */
+    /** Actual overlap supplied by View; pages must not hard-code Dock dimensions. */
+    void (*viewport_changed)(int32_t bottom_inset);
+    void (*leave)(void);
     void (*enter)(app_ui_page_transition_t transition);
 } app_ui_page_t;
 

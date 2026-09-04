@@ -9,6 +9,7 @@
 #define TEST_STUB_LVGL_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct _lv_obj_t lv_obj_t;
 typedef struct _lv_event_t lv_event_t;
@@ -287,4 +288,18 @@ lv_timer_t *lv_timer_create(
     uint32_t period,
     void *user_data);
 
+lv_indev_t *lv_indev_get_next(lv_indev_t *indev);
+lv_group_t *lv_indev_get_group(const lv_indev_t *indev);
+lv_obj_t *lv_group_get_focused(const lv_group_t *group);
+void lv_group_delete(lv_group_t *group);
+bool lv_obj_is_valid(const lv_obj_t *obj);
+void lv_obj_move_to_index(lv_obj_t *obj, int32_t index);
+void lv_obj_set_style_max_height(lv_obj_t *obj, int32_t value, uint32_t selector);
+uint32_t lv_tick_get(void);
+uint32_t lv_tick_elaps(uint32_t previous);
+void *lv_timer_get_user_data(lv_timer_t *timer);
+void lv_timer_pause(lv_timer_t *timer);
+void lv_timer_resume(lv_timer_t *timer);
+void lv_timer_reset(lv_timer_t *timer);
+void lv_timer_delete(lv_timer_t *timer);
 #endif /* TEST_STUB_LVGL_H */

@@ -9,5 +9,7 @@
 #include "../registry/App_UiPages.h"
 
 const app_ui_page_t *App_UiPageNetwork_Get(void);
+const app_ui_page_t *App_UiPageWifiSaved_Get(void);
+const app_ui_page_t *App_UiPageWifiDetail_Get(void);
 
 #endif /* APP_UI_PAGE_NETWORK_H */

@@ -21,6 +21,8 @@ const app_ui_page_t *App_UiPages_Get(app_ui_page_id_t page_id)
         App_UiPageHome_Get(),
         App_UiPageText_Get(),
         App_UiPageNetwork_Get(),
+        App_UiPageWifiSaved_Get(),
+        App_UiPageWifiDetail_Get(),
         App_UiPageHidHub_Get(),
         App_UiPageSettings_Get(),
         App_UiPageDebug_Get(),

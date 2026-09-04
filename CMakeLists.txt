@@ -53,6 +53,7 @@ if(EMSCRIPTEN)
     target_sources(index PRIVATE
         src/lvgl_app/port/pc/App_UiPort_Pc.c
         src/simulator/App_UiMockBridge.c
+        src/simulator/App_UiWifiMock.c
     )
     target_link_options(index PRIVATE
         "SHELL:--shell-file ${CMAKE_CURRENT_SOURCE_DIR}/web/lvgl_shell.html"

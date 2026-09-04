@@ -1,6 +1,7 @@
 /build/
 /build_web/
 /build_tests*/
+/build_runtime/
 /.cache/
 /.vscode/
 /.playwright-cli/

@@ -29,7 +29,7 @@ static bool has_text(const char *text)
 
 static bool validate_state(const app_ui_action_row_state_t *state)
 {
-    return state != NULL && has_text(state->title);
+    return state != NULL && has_text(state->title) && state->value_width >= 0;
 }
 
 static void set_optional_label(lv_obj_t *label, const char *text)
@@ -223,6 +223,7 @@ bool App_UiActionRow_Update(
     lv_label_set_text(row->title_label, state->title);
     set_optional_label(row->subtitle_label, state->subtitle);
     set_optional_label(row->value_label, state->value);
+    lv_obj_set_width(row->value_label, state->value_width > 0 ? state->value_width : ACTION_ROW_VALUE_WIDTH);
     lv_obj_set_height(
         row->root,
         row_height(has_text(state->subtitle)));

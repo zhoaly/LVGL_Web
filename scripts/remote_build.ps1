@@ -41,6 +41,7 @@ try {
         --exclude='./build' `
         --exclude='./build_web' `
         --exclude='./build_tests*' `
+        --exclude='./build_runtime' `
         --exclude='./.git' `
         .
 }

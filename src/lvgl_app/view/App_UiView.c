@@ -393,6 +393,13 @@ bool App_UiView_Init(app_ui_view_t *view)
         App_UiTheme_GetColor(APP_UI_THEME_COLOR_TEXT_MUTED),
         0);
     lv_label_set_text(view->toast_label, "");
+    lv_obj_set_width(view->toast_label, LV_PCT(94));
+    lv_obj_add_flag(view->toast_label, LV_OBJ_FLAG_FLOATING | LV_OBJ_FLAG_HIDDEN);
+    lv_obj_align(view->toast_label, LV_ALIGN_BOTTOM_MID, 0, -64);
+    lv_obj_set_style_bg_color(view->toast_label,
+        App_UiTheme_GetColor(APP_UI_THEME_COLOR_SURFACE_MUTED), 0);
+    lv_obj_set_style_bg_opa(view->toast_label, LV_OPA_COVER, 0);
+    lv_obj_set_style_pad_all(view->toast_label, 6, 0);
     return true;
 }
 
@@ -415,6 +422,7 @@ void App_UiView_ShowPage(app_ui_view_t *view,
         return;
     }
 
+    if(view->active_page && view->active_page->leave) view->active_page->leave();
     settle_page_transition(view);
     old_host = view->active_page_host;
     new_host = create_page_host(view->content);
@@ -453,6 +461,19 @@ void App_UiView_ShowPage(app_ui_view_t *view,
            transition != APP_UI_PAGE_TRANSITION_INITIAL) {
             prepare_nav_bar_enter(view);
         }
+    }
+
+    if(page->viewport_changed) {
+        int32_t inset = 0;
+        lv_obj_update_layout(view->screen_root);
+        if(view->nav_bar) {
+            lv_area_t content_area, nav_area;
+            lv_obj_get_coords(view->content, &content_area);
+            lv_obj_get_coords(view->nav_bar, &nav_area);
+            inset = content_area.y2 - (nav_area.y1 - view->nav_enter_offset) + 1;
+            if(inset < 0) inset = 0;
+        }
+        page->viewport_changed(inset);
     }
 
     if(view->input_group != NULL &&
@@ -524,6 +545,23 @@ void App_UiView_Refresh(app_ui_view_t *view,
     }
 }
 
+static void toast_expired(lv_timer_t *timer)
+{
+    app_ui_view_t *view = lv_timer_get_user_data(timer);
+    if(view->toast_label) {
+        lv_label_set_text(view->toast_label, "");
+        lv_obj_add_flag(view->toast_label, LV_OBJ_FLAG_HIDDEN);
+    }
+    lv_timer_pause(timer);
+}
+static void toast_deleted(lv_event_t *event)
+{
+    app_ui_view_t *view = lv_event_get_user_data(event);
+    if(view->toast_timer) lv_timer_delete(view->toast_timer);
+    view->toast_timer = NULL;
+    view->toast_label = NULL;
+}
+
 void App_UiView_ShowToast(app_ui_view_t *view, const char *message)
 {
     /* 在底部标签显示消息（空消息则清空） */
@@ -536,6 +574,14 @@ void App_UiView_ShowToast(app_ui_view_t *view, const char *message)
             return;
         }
 
+        lv_obj_move_to_index(view->toast_label, -1);
+        lv_obj_remove_flag(view->toast_label, LV_OBJ_FLAG_HIDDEN);
+        if(!view->toast_timer) {
+            view->toast_timer = lv_timer_create(toast_expired, 3000, view);
+            lv_obj_add_event_cb(view->toast_label, toast_deleted, LV_EVENT_DELETE, view);
+        }
+        lv_timer_reset(view->toast_timer);
+        lv_timer_resume(view->toast_timer);
         lv_label_set_text(view->toast_label, message);
         App_UiMotion_AnimateEnter(view->toast_label,
                                  APP_UI_MOTION_OPACITY_TEXT,

@@ -13,6 +13,7 @@
  */
 
 #include "../App_UiPort.h"
+#include "../../../simulator/App_UiWifiMock.h"
 
 static lv_indev_t *s_encoder_indev;
 
@@ -64,7 +65,7 @@ bool App_UiPort_BindCommandDispatcher(
     app_ui_command_submitter_fn dispatcher,
     void *user_data)
 {
-    return App_UiCommand_SetSubmitter(dispatcher, user_data);
+    return App_UiWifiMock_Bind(dispatcher, user_data);
 }
 
 void App_UiPort_PcSetEncoderIndev(lv_indev_t *indev)

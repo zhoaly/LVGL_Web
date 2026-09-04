@@ -29,6 +29,7 @@ typedef struct {
     app_ui_status_bar_t status_bar;     /**< 屏幕级顶部状态栏 */
     app_ui_menu_drawer_t menu_drawer;   /**< 屏幕级菜单抽屉 */
     lv_obj_t *content;                  /**< 内容区容器 */
+    lv_timer_t *toast_timer;
     lv_obj_t *toast_label;              /**< 底部 Toast 标签 */
     lv_obj_t *nav_bar;                  /**< 底部导航栏，首页时为 NULL */
     const app_ui_page_t *active_page;   /**< 当前活动页面 */

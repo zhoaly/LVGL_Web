@@ -18,6 +18,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "App_UiWifi.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +36,8 @@ typedef enum {
     APP_UI_PAGE_SETTINGS,
     APP_UI_PAGE_DEBUG,
     APP_UI_PAGE_CONTROLS_GALLERY,
+    APP_UI_PAGE_WIFI_SAVED,
+    APP_UI_PAGE_WIFI_DETAIL,
     APP_UI_PAGE_COUNT,
 } app_ui_page_id_t;
 
@@ -46,6 +49,7 @@ typedef enum {
     APP_UI_DIRTY_SYSTEM = (1u << 0),   /**< 系统消息变更 */
     APP_UI_DIRTY_NAV = (1u << 1),      /**< 导航变更（页面切换） */
     APP_UI_DIRTY_STATUS = (1u << 2),   /**< 时间、天气和无线连接状态变更 */
+    APP_UI_DIRTY_WIFI = (1u << 3),
     APP_UI_DIRTY_ALL = 0xFFFFFFFFu,    /**< 全量刷新标志 */
 } app_ui_dirty_mask_t;
 
@@ -91,6 +95,10 @@ typedef enum {
     APP_UI_EVENT_WEATHER_UPDATED,        /**< 天气状态更新 */
     APP_UI_EVENT_WIFI_STATE_CHANGED,     /**< Wi-Fi 状态更新 */
     APP_UI_EVENT_BLUETOOTH_STATE_CHANGED,/**< 蓝牙状态更新 */
+    APP_UI_EVENT_WIFI_RUNTIME,
+    APP_UI_EVENT_WIFI_NETWORKS,
+    APP_UI_EVENT_WIFI_PROFILES,
+    APP_UI_EVENT_WIFI_OPERATION,
     APP_UI_EVENT_COUNT,
 } app_ui_event_type_t;
 
@@ -101,6 +109,10 @@ typedef struct {
     app_ui_event_type_t type;  /**< 事件类型 */
     char text[48];             /**< SHOW_MESSAGE 消息文本 */
     union {
+        app_ui_wifi_runtime_t wifi_runtime;
+        app_ui_wifi_networks_t wifi_networks;
+        app_ui_wifi_profiles_t wifi_profiles;
+        app_ui_wifi_operation_t wifi_operation;
         app_ui_time_state_t time;
         app_ui_weather_state_t weather;
         app_ui_wifi_state_t wifi;

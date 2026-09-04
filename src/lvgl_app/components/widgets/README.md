@@ -67,3 +67,16 @@ widgets/
 
 如果组件在 `lv_layer_top()` 创建覆盖层，其组合所有者负责在自身根对象删除时显式
 销毁它，避免覆盖层脱离所有者生命周期继续存在。
+
+## Confirm Dialog
+
+`confirm_dialog/App_UiConfirmDialog.{c,h}` provides a reusable confirmation
+surface with caller-owned Context, `Create`/`Update`/`Destroy`, plain text state,
+and a `confirmed` callback. It has no service or page dependencies. Cancel is
+focused by default. The dialog temporarily redirects grouped input devices,
+blocks pointer input below its scrim, and restores the previous group/focus on
+close. The composition owner must call `Destroy` before leaving its page and
+when its root is deleted. Never reuse a live Context for a second dialog.
+
+Pages may receive the actual Dock overlap through `viewport_changed`; pass
+that value to Scroll Stack instead of duplicating fixed Dock measurements.

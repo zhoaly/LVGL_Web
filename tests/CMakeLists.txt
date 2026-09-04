@@ -98,6 +98,7 @@ add_library(test_ui_compile OBJECT
     ../src/lvgl_app/assets/App_UiTheme.c
     ../src/lvgl_app/components/App_UiComponents.c
     ../src/lvgl_app/components/widgets/action_row/App_UiActionRow.c
+    ../src/lvgl_app/components/widgets/confirm_dialog/App_UiConfirmDialog.c
     ../src/lvgl_app/components/widgets/menu_drawer/App_UiMenuDrawer.c
     ../src/lvgl_app/components/motion/App_UiMotion.c
     ../src/lvgl_app/components/widgets/scroll_stack/App_UiScrollStack.c

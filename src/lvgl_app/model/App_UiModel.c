@@ -33,6 +33,51 @@ void App_UiModel_ApplyEvent(app_ui_model_t *model, const app_ui_event_t *event)
     }
 
     switch(event->type) {
+    case APP_UI_EVENT_WIFI_RUNTIME:
+        if(event->data.wifi_runtime.link > APP_UI_WIFI_LINK_BACKOFF ||
+           event->data.wifi_runtime.scan > APP_UI_WIFI_SCAN_FAILED) break;
+        model->wifi = event->data.wifi_runtime;
+        model->wifi.ssid[32] = '\0';
+        model->wifi.ipv4[15] = '\0';
+        model->status.wifi = !model->wifi.enabled ? APP_UI_WIFI_DISCONNECTED :
+            model->wifi.net_ready ? APP_UI_WIFI_CONNECTED :
+            (model->wifi.transitioning || model->wifi.link == APP_UI_WIFI_LINK_SELECTING ||
+             model->wifi.link == APP_UI_WIFI_LINK_CONNECTING ||
+             model->wifi.link == APP_UI_WIFI_LINK_ASSOCIATED ||
+             model->wifi.link == APP_UI_WIFI_LINK_BACKOFF) ?
+                APP_UI_WIFI_CONNECTING : APP_UI_WIFI_DISCONNECTED;
+        model->dirty_mask |= APP_UI_DIRTY_WIFI | APP_UI_DIRTY_STATUS;
+        break;
+    case APP_UI_EVENT_WIFI_NETWORKS:
+        if(event->data.wifi_networks.count > APP_UI_WIFI_NETWORK_CAPACITY) break;
+        model->networks = event->data.wifi_networks;
+        for(uint8_t i = 0; i < model->networks.count; ++i)
+            model->networks.items[i].ssid[32] = '\0';
+        model->dirty_mask |= APP_UI_DIRTY_WIFI;
+        break;
+    case APP_UI_EVENT_WIFI_PROFILES:
+        if(event->data.wifi_profiles.count > APP_UI_WIFI_PROFILE_CAPACITY) break;
+        model->profiles = event->data.wifi_profiles;
+        for(uint8_t i = 0; i < model->profiles.count; ++i)
+            model->profiles.items[i].ssid[32] = '\0';
+        model->dirty_mask |= APP_UI_DIRTY_WIFI;
+        break;
+    case APP_UI_EVENT_WIFI_OPERATION: {
+        app_ui_wifi_operation_t op = event->data.wifi_operation;
+        if(op.token == 0 || op.state > APP_UI_WIFI_OPERATION_CANCELED) break;
+        op.message[47] = '\0';
+        app_ui_wifi_operation_t *slot =
+            &model->operations[op.token % APP_UI_WIFI_OPERATION_CAPACITY];
+        if(slot->token == op.token && slot->state != APP_UI_WIFI_OPERATION_ACCEPTED)
+            break;
+        *slot = op;
+        if(op.state != APP_UI_WIFI_OPERATION_ACCEPTED && op.message[0]) {
+            snprintf(model->message, sizeof(model->message), "%s", op.message);
+            model->dirty_mask |= APP_UI_DIRTY_SYSTEM;
+        }
+        model->dirty_mask |= APP_UI_DIRTY_WIFI;
+        break;
+    }
     case APP_UI_EVENT_SHOW_MESSAGE:
         snprintf(model->message, sizeof(model->message), "%s", event->text);
         model->dirty_mask |= APP_UI_DIRTY_SYSTEM;
