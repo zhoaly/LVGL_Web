@@ -33,6 +33,10 @@
 #include "../port/App_UiPort.h"
 #include "../view/App_UiView.h"
 
+#ifndef APP_UI_PSRAM_BSS_ATTR
+#define APP_UI_PSRAM_BSS_ATTR
+#endif
+
 /** 内部事件队列长度（循环缓冲区） */
 #define APP_UI_QUEUE_LEN 16u
 
@@ -79,7 +83,7 @@ typedef struct {
 } app_ui_ctx_t;
 
 /** 全局单例上下文实例 */
-static app_ui_ctx_t s_ui;
+static APP_UI_PSRAM_BSS_ATTR app_ui_ctx_t s_ui;
 
 /**
  * @brief 向事件循环队列压入一个项目

@@ -10,6 +10,10 @@
 #include "../../components/widgets/scroll_stack/App_UiScrollStack.h"
 #include "../../components/widgets/confirm_dialog/App_UiConfirmDialog.h"
 
+#ifndef APP_UI_PSRAM_BSS_ATTR
+#define APP_UI_PSRAM_BSS_ATTR
+#endif
+
 enum { ROW_CURRENT = 1, ROW_SCAN, ROW_SAVED, ROW_CONNECT, ROW_FORGET,
        ROW_POWER, ROW_AUTO, ROW_JOIN, ROW_NETWORK_BASE = 100 };
 typedef struct {
@@ -35,9 +39,9 @@ typedef struct {
     app_ui_confirm_dialog_t dialog;
     lv_obj_t *description;
 } detail_page_t;
-static network_page_t s_network;
-static saved_page_t s_saved;
-static detail_page_t s_detail;
+static APP_UI_PSRAM_BSS_ATTR network_page_t s_network;
+static APP_UI_PSRAM_BSS_ATTR saved_page_t s_saved;
+static APP_UI_PSRAM_BSS_ATTR detail_page_t s_detail;
 static const app_ui_model_t *s_model;
 static uint32_t s_selected, s_token, s_pending, s_scan_generation, s_scan_tick;
 static bool s_scan_on_enter;
